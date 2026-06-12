@@ -1,0 +1,255 @@
+{
+  "id": "docker",
+  "titulo": "Docker: Contenedores para Desarrolladores",
+  "categoria": "virtualizacion",
+  "descripcion": "Fundamentos de Docker: imágenes, contenedores, volúmenes y docker-compose",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "Docker es una plataforma de contenedores que permite empaquetar aplicaciones con todas sus dependencias en unidades aisladas llamadas contenedores. A diferencia de las VMs, los contenedores comparten el kernel del host, lo que los hace más ligeros y rápidos de iniciar."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Conceptos fundamentales"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Docker se basa en varios conceptos clave: imágenes (plantillas read-only para crear contenedores), contenedores (instancias ejecutándose de imágenes), registries (repositorios de imágenes como Docker Hub), y Dockerfiles (recetas para construir imágenes)."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Estructura básica de Docker\n# Imagen: Plantilla inmutable con el sistema de archivos\n# Contenedor: Instancia ejecutándose de una imagen\n# Tag: Versión específica de una imagen\n# Registry: Servidor que almacena imágenes (Docker Hub, GCR, ECR)",
+      "descripcion": "Conceptos fundamentales de Docker"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Instalación"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ubuntu/Debian\ncurl -fsSL https://get.docker.com | sh\n\n# Verificar instalación\ndocker --version\ndocker ps  # lista contenedores en ejecución",
+      "descripcion": "Instalar Docker en distribuciones basadas en Debian"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Agregar usuario al grupo docker (evita usar sudo)\nsudo usermod -aG docker $USER\n# Cerrar sesión y volver a entrar",
+      "descripcion": "Agregar usuario al grupo docker"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Instalar Docker Compose (v2)\ndocker compose install\n# O versión standalone\nsudo apt install docker-compose",
+      "descripcion": "Instalar Docker Compose"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Imágenes Docker"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Las imágenes son plantillas de solo lectura que contienen todo lo necesario para ejecutar una aplicación: código, runtime, librerías y configuraciones. Se construyen desde un Dockerfile o se descargan de un registry."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Descargar una imagen de Docker Hub\ndocker pull ubuntu:22.04\ndocker pull nginx:latest\ndocker pull python:3.11-slim",
+      "descripcion": "Descargar imágenes del registry"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Listar imágenes descargadas\ndocker images\n# o\ndocker image ls",
+      "descripcion": "Ver imágenes disponibles localmente"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Eliminar imagen no usada\ndocker rmi ubuntu:22.04\n\n# Eliminar todas las imágenes sin usar\ndocker image prune -a",
+      "descripcion": "Limpiar imágenes no utilizadas"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Construir imagen desde Dockerfile\ndocker build -t mi-app:1.0 /ruta/al/proyecto\n\n# Construir con contexto de build\ndocker build -t mi-app:latest .",
+      "descripcion": "Construir imagen personalizada"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Contenedores"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Un contenedor es una instancia ejecutándose de una imagen. Los contenedores son procesos aislados que usan namespaces de Linux para proporcionar su propia vista del sistema de archivos, red, procesos, etc."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear y ejecutar un contenedor\ndocker run ubuntu:22.04 echo \"Hola mundo\"\n\n# Ejecutar en modo interactivo (-it)\ndocker run -it ubuntu:22.04 /bin/bash\n# Salir con Ctrl+D o typing exit",
+      "descripcion": "Ejecutar comandos en contenedores"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ejecutar en segundo plano (modo detached)\ndocker run -d --name mi-nginx nginx:latest\n\n# Ver contenedores en ejecución\ndocker ps\n\n# Ver todos los contenedores (incluyendo detenidos)\ndocker ps -a",
+      "descripcion": "Ejecutar contenedores en segundo plano"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Detener e iniciar contenedores\ndocker stop mi-nginx\ndocker start mi-nginx\n\n# Reiniciar\ndocker restart mi-nginx",
+      "descripcion": "Control de estado de contenedores"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver logs de un contenedor\ndocker logs mi-nginx\ndocker logs -f mi-nginx  # follow mode\ndocker logs --tail 100 mi-nginx  # últimas 100 líneas",
+      "descripcion": "Ver logs de contenedores"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ejecutar comandos dentro de un contenedor\ndocker exec -it mi-nginx /bin/bash\n\n# Ejecutar como usuario específico\ndocker exec -u root mi-nginx apt update",
+      "descripcion": "Acceder al shell de un contenedor en ejecución"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Eliminar contenedor\ndocker rm mi-nginx\n\n# Forzar eliminación (si está en ejecución)\ndocker rm -f mi-nginx\n\n# Eliminar contenedores detenidos\ndocker container prune",
+      "descripcion": "Eliminar contenedores"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Puertos y redes"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Por defecto, los contenedores están aislados de la red del host. Para acceder a servicios dentro del contenedor, necesitas mapear puertos o configurar redes de Docker."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Mapear puertos del host a contenedores\ndocker run -d -p 8080:80 --name mi-nginx nginx:latest\n# Puerto 8080 del host -> puerto 80 del contenedor",
+      "descripcion": "Exponer puertos de contenedores"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver puertos mapeados de un contenedor\ndocker port mi-nginx",
+      "descripcion": "Ver mapeo de puertos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear una red personalizada\ndocker network create mi-red\n\n# Conectar contenedor a una red\ndocker network connect mi-red mi-nginx\n\n# Crear y conectar en una sola instrucción\ndocker run -d --network mi-red --name app nginx:latest",
+      "descripcion": "Crear y gestionar redes de Docker"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Volúmenes"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Los volúmenes permiten persistir datos más allá del ciclo de vida del contenedor. Son el mecanismo recomendado para persistir datos de bases de datos, archivos subidos, configuraciones, etc."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear volumen\ndocker volume create mi-datos\n\n# Usar volumen con un contenedor\ndocker run -d -v mi-datos:/datos --name db postgres:latest\n\n# Ver información del volumen\ndocker volume inspect mi-datos",
+      "descripcion": "Crear y usar volúmenes"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Montar directorio del host como volumen\ndocker run -d \\\n  -v /ruta/local:/ruta/contenedor \\\n  --name mi-app mi-app:latest",
+      "descripcion": "Montar directorio del host"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Tipos de montaje\n# -v volumen:nombre:/ruta        -> volumen named\n# -v /ruta/absoluta:/ruta        -> bind mount (directorio host)\n# -v /ruta/relativa:/ruta        -> bind mount (relativo al contexto de build)\n# -v /ruta:/ruta:ro               -> solo lectura (:ro)",
+      "descripcion": "Diferentes tipos de volúmenes"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Eliminar volumen no usado\ndocker volume rm mi-datos\n\n# Eliminar todos los volúmenes sin usar\ndocker volume prune",
+      "descripcion": "Limpiar volúmenes no utilizados"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Dockerfile"
+    },
+    {
+      "tipo": "texto",
+      "valor": "El Dockerfile es un archivo de texto que contiene instrucciones para construir una imagen de Docker. Cada instrucción crea una capa en la imagen."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ejemplo de Dockerfile para aplicación Node.js\nFROM node:18-alpine\n\nWORKDIR /app\n\nCOPY package*.json ./\nRUN npm ci --only=production\n\nCOPY . .\n\nEXPOSE 3000\n\nCMD [\"node\", \"server.js\"]",
+      "descripcion": "Dockerfile de ejemplo para aplicación Node.js"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Instrucciones comunes del Dockerfile\n# FROM imagen:tag           -> imagen base\n# RUN comando              -> ejecuta comando durante build\n# COPY origen destino      -> copia archivos al contenedor\n# WORKDIR /ruta            -> directorio de trabajo\n# EXPOSE puerto            -> declara puerto\n# ENV clave=valor           -> variable de entorno\n# CMD [\"comando\"]          -> comando por defecto al ejecutar\n# ENTRYPOINT               -> comando que siempre se ejecuta\n# ARG clave=valor           -> argumento de build",
+      "descripcion": "Instrucciones del Dockerfile"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ejemplo multi-stage para Go\n# Stage 1: build\nFROM golang:1.21 AS builder\nWORKDIR /app\nCOPY . .\nRUN CGO_ENABLED=0 go build -o miapp\n\n# Stage 2: producción\nFROM alpine:latest\nCOPY --from=builder /app/miapp /usr/local/bin/\nCMD [\"miapp\"]",
+      "descripcion": "Dockerfile multi-stage para optimizar tamaño"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Docker Compose"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Docker Compose es una herramienta para definir y ejecutar aplicaciones multi-contenedor. Usando un archivo YAML, puedes configurar todos los servicios, redes y volúmenes de tu aplicación."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# docker-compose.yml de ejemplo\nversion: '3.8'\n\nservices:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    depends_on:\n      - db\n      - redis\n    environment:\n      - NODE_ENV=production\n\n  db:\n    image: postgres:15\n    volumes:\n      - db-data:/var/lib/postgresql/data\n    environment:\n      POSTGRES_PASSWORD: secret\n\n  redis:\n    image: redis:alpine\n\nvolumes:\n  db-data:",
+      "descripcion": "Archivo docker-compose.yml de ejemplo"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Comandos de Docker Compose\ndocker compose up -d          # iniciar servicios\ndocker compose down          # detener y eliminar\ndocker compose ps           # ver estado\ndocker compose logs -f app  # ver logs\ndocker compose build         # reconstruir imágenes\ndocker compose restart      # reiniciar servicios",
+      "descripcion": "Comandos principales de Docker Compose"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Escalar un servicio\ndocker compose up -d --scale app=3\n\n# Ejecutar comandos en un servicio\ndocker compose exec app npm test",
+      "descripcion": "Escalar y ejecutar comandos en servicios"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Mejores prácticas"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Optimización de Dockerfiles\n# 1. Usar imágenes base pequeñas (alpine, slim)\nFROM python:3.11-slim  # mejor que python:3.11\n\n# 2. Ordenar capas (lo que cambia menos primero)\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY . .\n\n# 3. Limpiar caches en la misma capa\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends pkg && \\\n    rm -rf /var/lib/apt/lists/*",
+      "descripcion": "Optimizar imágenes Docker"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Usar .dockerignore\nnode_modules\n.git\n.env*\n*.log\ndist\nbuild\ncoverage\n.vscode\n*.md",
+      "descripcion": "Archivo .dockerignore para excluir archivos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Usar usuarios no root\nRUN groupadd -r appgroup && useradd -r -g appgroup appuser\nUSER appuser\n\n# Declarar puertos en orden\nEXPOSE 80 443 8080",
+      "descripcion": "Seguridad y buenas prácticas"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores frecuentes"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'docker: permission denied while trying to connect to Docker daemon'\nCausa: Usuario no está en el grupo docker\nSolución: sudo usermod -aG docker $USER (cerrar sesión después)",
+      "descripcion": "Error de permisos con Docker"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'Bind for port 80 failed: port is already allocated'\nCausa: Otro contenedor o servicio está usando el puerto\nSolución: docker ps (ver contenedores), cambiar puerto o detener el otro",
+      "descripcion": "Puerto en uso"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'No such container: xyz'\nCausa: Contenedor no existe o nombre incorrecto\nSolución: docker ps -a (ver todos los contenedores), usar --name al crear",
+      "descripcion": "Contenedor no encontrado"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'image platform xxx does not match expected xxx'\nCausa: Arquitectura de imagen no coincide con host\nSolución: docker build --platform linux/amd64 o usar imágenes multi-arch",
+      "descripcion": "Plataforma de imagen no compatible"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'docker-compose up' falla con 'network not found'\nCausa: Red de compose eliminada o corrupta\nSolución: docker compose down --remove-orphans && docker compose up -d",
+      "descripcion": "Red de Docker Compose no encontrada"
+    }
+  ]
+}

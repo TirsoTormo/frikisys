@@ -1,0 +1,70 @@
+{
+  "id": "vmware",
+  "titulo": "VMware: Workstation y ESXi",
+  "categoria": "virtualizacion",
+  "descripcion": "Virtualización profesional con VMware Workstation y ESXi",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "VMware es líder en virtualización empresarial. VMware Workstation es ideal para desarrollo local, mientras que ESXi es la base de la infraestructura en centros de datos."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "VMware Workstation (Escritorio)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Comandos útiles en Linux (vmrun)\nvmrun list                     # Lista VMs en ejecución\nvmrun start \"ruta/vm.vmx\"     # Iniciar VM\nvmrun stop \"ruta/vm.vmx\"      # Detener VM\nvmrun reset \"ruta/vm.vmx\"     # Reiniciar VM\nvmrun suspend \"ruta/vm.vmx\"   # Suspender VM\n\n# Modos de red\nvmrun listNetworkTypes         # Ver tipos de red disponibles\nvmrun listNetworks             # Ver redes configuradas",
+      "descripcion": "Controlar VMware Workstation desde CLI"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Instalar VMware Tools"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Linux (montar ISO de VMware Tools)\nsudo mount /dev/cdrom /mnt\ntar xzf /mnt/VMwareTools-*.tar.gz -C /tmp\ncd /tmp/vmware-tools-distrib\nsudo ./vmware-install.pl -d\n\n# Ubuntu/Debian moderno (open-vm-tools)\nsudo apt install open-vm-tools\nsudo apt install open-vm-tools-desktop  # Con interfaz gráfica",
+      "descripcion": "Instalar VMware Tools en Linux"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "VMware ESXi (vSphere)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Acceso SSH a ESXi\nssh root@esxi-host\n\n# Comandos ESXi (esxcli)\nesxcli vm list                                    # Lista VMs\nesxcli network vm list                            # VMs y sus redes\nesxcli hardware cpu list                          # Info CPU\nesxcli hardware memory get                       # Info RAM\nesxcli system version get                         # Versión ESXi\n\n# Gestionar VMs\nesxcli vm process list                            # Procesos de VMs\nesxcli vm process kill -t force -w <WorldID>    # Matar VM colgada",
+      "descripcion": "Gestión de ESXi por línea de comandos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "PowerCLI (Windows/macOS/Linux)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Conectar a vCenter/ESXi\nConnect-VIServer -Server 192.168.1.100 -User admin -Password pass\n\n# Listar VMs\nGet-VM\nGet-VM | Select Name, NumCpu, MemoryGB, PowerState\n\n# Gestionar VMs\nStart-VM -VM \"MiServidor\"\nStop-VM -VM \"MiServidor\" -Force\nRestart-VM -VM \"MiServidor\"\n\n# Crear snapshot\nNew-Snapshot -VM \"MiServidor\" -Name \"Antes-Update\"\nGet-Snapshot -VM \"MiServidor\"\n\n# Gestionar datastore\nGet-Datastore\nGet-Datastore | Select Name, CapacityGB, FreeSpaceGB",
+      "descripcion": "PowerCLI para automatización"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Configuración de Red Virtual"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Tipos de adaptador en VMware:\n# - Bridged: conecta directamente a la red física\n# - NAT: comparte IP del host\n# - Host-only: solo comunicación host-VM\n# - LAN Segment: comunicación entre VMs específicas\n\n# Configurar en ESXi\nesxcli network vswitch standard add -v vSwitch1\nesxcli network vswitch standard uplink add -v vSwitch1 -u vmnic1\nesxcli network vswitch standard portgroup add -v vSwitch1 -p \"VM Network\"\nesxcli network ip interface add -i vmk1 -p \"Management Network\"",
+      "descripcion": "Tipos de red y configuración"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Storage (Datastores)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Añadir datastore NFS\nesxcli storage nfs add -H nfs-server.local -s /share -v NFS-Datastore\n\n# Ver datastores\nGet-Datastore\n\n# VMFS datastore\nesxcli storage core.device list | grep -i vmfs\n\n# thin vs thick provisioning\nesxcli storage core.file layout spec -d t10:xxx --initiator iqn.xxx",
+      "descripcion": "Gestionar almacenamiento"
+    },
+    {
+      "tipo": "info",
+      "valor": "VMware Workstation es para desarrollo local. ESXi requiere licencia para producción (hay versión gratuita limitada). vCenter permite gestionar múltiples hosts."
+    }
+  ]
+}

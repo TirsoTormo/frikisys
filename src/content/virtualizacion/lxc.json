@@ -1,0 +1,70 @@
+{
+  "id": "lxc",
+  "titulo": "LXC/LXD: Contenedores de Sistema",
+  "categoria": "virtualizacion",
+  "descripcion": "Contenedores ligeros tipo sistema operativo para Linux",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "LXC (Linux Containers) y LXD son tecnologías de virtualización a nivel de sistema operativo. A diferencia de Docker, los contenedores LXC son más similares a máquinas virtuales tradicionales pero mucho más ligeros."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Instalación"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ubuntu/Debian\nsudo apt update\nsudo apt install lxc lxc-utils\n\n# Verificar instalación\nlxc-checkconfig\n\n# Iniciar servicio\nsudo systemctl start lxc-net\nsudo systemctl enable lxc-net",
+      "descripcion": "Instalar LXC en Linux"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Crear y Gestionar Contenedores"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Listar contenedores\nlxc-ls\nlxc-ls --active\n\n# Crear contenedor\nsudo lxc-create -n mi-contenedor -t download\n# Te preguntará: distribución, versión, arquitectura\n\n# Iniciar/Detener\nsudo lxc-start -n mi-contenedor\nsudo lxc-stop -n mi-contenedor\n\n# Acceder a la consola\nsudo lxc-attach -n mi-contenedor\n\n# Información del contenedor\nsudo lxc-info -n mi-contenedor",
+      "descripcion": "Operaciones básicas con LXC"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Configuración de Red"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Configurar red en /etc/lxc/default.conf\nlxc.net.0.type = veth\nlxc.net.0.link = lxcbr0\nlxc.net.0.flags = up\nlxc.net.0.hwaddr = 00:16:3e:xx:xx:xx\n\n# Red tipo bridge (para acceso completo)\nlxc.net.0.type = bridge\nlxc.net.0.link = br0\nlxc.net.0.flags = up",
+      "descripcion": "Configuración de red para contenedores"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Límites de Recursos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Memoria máxima\nlxc.cgroup2.memory.max = 512M\n\n# CPUs asignados\nlxc.cgroup2.cpuset.cpus = 0-1\n\n# Límite de CPU\nlxc.cgroup2.cpu.weight = 1024\n\n# Almacenamiento\nlxc.rootfs.size = 5GB",
+      "descripcion": "Limitar recursos del contenedor"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "LXD (Nueva Generación)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Instalar LXD\nsudo snap install lxd\n\n# Inicializar\nlxd init\n\n# Crear contenedor\nlxc launch ubuntu:22.04 mi-vm\n\n# Listar\nlxc list\nlxc list --format table\n\n# Gestionar\nlxc start mi-vm\nlxc stop mi-vm\nlxc delete mi-vm\n\n# Ejecutar comandos\nlxc exec mi-vm -- apt update\n\n# Acceso shell\nlxc shell mi-vm",
+      "descripcion": "LXD - interfaz moderna de LXC"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Snapshots y Clonación"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Snapshot con LXD\nlxc snapshot mi-vm backup-inicial\nlxc snapshot mi-vm antes-update\n\n# Listar snapshots\nlxc snapshot list mi-vm\n\n# Restaurar snapshot\nlxc restore mi-vm backup-inicial\n\n# Clonar contenedor\nlxc copy mi-vm mi-vm-clon\n\n# Ver almacenamiento\nlxc storage list\nlxc storage info default",
+      "descripcion": "Snapshots y clones"
+    },
+    {
+      "tipo": "info",
+      "valor": "LXC es más bajo nivel que Docker. LXD proporciona una API REST y herramientas más modernas. Para microservicios usa Docker, para VMs ligeras usa LXC/LXD."
+    }
+  ]
+}

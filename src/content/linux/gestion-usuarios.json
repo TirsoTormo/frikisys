@@ -1,0 +1,107 @@
+{
+  "id": "gestion-usuarios",
+  "titulo": "Gestión de Usuarios en Linux",
+  "categoria": "linux",
+  "descripcion": "Crear, modificar y eliminar usuarios y grupos en sistemas Linux",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "La gestión de usuarios es una tarea fundamental del SysAdmin. Linux utiliza un modelo de seguridad basado en usuarios y grupos, donde cada proceso y archivo tiene un propietario."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Archivos Fundamentales"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Antes de manipular usuarios, conoce estos archivos clave:"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# /etc/passwd - Información de cuentas de usuario\n# Formato: nombre:contraseña:UID:GID:comentario:home:shell\nroot:x:0:0:root:/root:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\n\n# /etc/shadow - Contraseñas encriptadas (solo root)\n# Formato: nombre:contraseña:último_cambio:días_antes_cambio:mínimo_días:máximo_días:aviso:expira\n\n# /etc/group - Grupos del sistema\n# Formato: nombre:contraseña:GID:miembros\nsudo:x:27:tirso,adminuser\nwww-data:x:33:\n\n# /etc/gshadow - Contraseñas de grupo (solo root)",
+      "descripcion": "Archivos de gestión de usuarios"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Crear Usuarios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear usuario básico\nuseradd -m nombre_usuario\n\n# Crear usuario con configuración completa\nuseradd -m \\\n  -c \"Juan Pérez - SysAdmin\" \\\n  -s /bin/bash \\\n  -G sudo,www-data \\\n  -e 2025-12-31 \\\n  jperez\n\n# Opciones comunes:\n# -m          Crear directorio home\n# -c          Comentario/Descripción\n# -s          Shell por defecto\n# -G          Grupos secundarios\n# -e          Fecha de expiración (YYYY-MM-DD)\n# -u          UID específico\n# -d          Directorio home personalizado",
+      "descripcion": "Creación de nuevos usuarios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Comando interactivo para crear usuarios\nadduser nombre_usuario\n\n# Este comando:\n# 1. Crea el usuario con HOME\n# 2. Pide contraseña\n# 3. Pide información adicional\n# 4. Crea el grupo primario\n# Es más amigable que useradd",
+      "descripcion": "Crear usuario con adduser (interactivo)"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Modificar Usuarios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Cambiar contraseña\npasswd nombre_usuario\n\n# Forzar cambio de contraseña en próximo login\npasswd -e nombre_usuario\n\n# Bloquear/desbloquear usuario\npasswd -l nombre_usuario    # Bloquear\npasswd -u nombre_usuario    # Desbloquear\n\n# Cambiar shell\nusermod -s /bin/zsh nombre_usuario\n\n# Cambiar directorio home\nusermod -d /nuevo/home -m nombre_usuario\n\n# Agregar a grupos\nusermod -aG grupo1,grupo2 nombre_usuario\n\n# Cambiar nombre de usuario\nusermod -l nuevo_nombre viejo_nombre\n\n# Cambiar UID\nusermod -u 1500 nombre_usuario",
+      "descripcion": "Modificación de usuarios existentes"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver información de usuario\nid nombre_usuario\n# uid=1000(jperez) gid=1000(jperez) grupos=1000(jperez),27(sudo),33(www-data)\n\n# Ver último login\nlastlog\nlastlog -u nombre_usuario\n\n# Ver a qué grupos pertenece un usuario\ngroups nombre_usuario\n\n# Listar todos los usuarios del sistema\ncat /etc/passwd | grep -v '/nologin\\|false' | cut -d: -f1",
+      "descripcion": "Consultar información de usuarios"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Eliminar Usuarios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Eliminar usuario (conserva archivos)\nuserdel nombre_usuario\n\n# Eliminar usuario Y su directorio home\nuserdel -r nombre_usuario\n\n# Eliminar todos los archivos del usuario en todo el sistema\n# (busca archivos con UID del usuario)\nfind / -nouser -exec rm -rf {} \\;\n\n# ADVERTENCIA: Siempre verificar antes de eliminar\n# Revisa qué archivos tiene el usuario\nfind / -user nombre_usuario -ls",
+      "descripcion": "Eliminación de usuarios"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Gestión de Grupos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear grupo\ngroupadd nombre_grupo\n\n# Crear grupo con GID específico\ngroupadd -g 1500 nombre_grupo\n\n# Agregar usuario a grupo\n# Método moderno (Debian/Ubuntu)\nusermod -aG grupo usuario\n\n# Método antiguo\ngpasswd -a usuario grupo\n\n# Agregar múltiples usuarios a un grupo\nfor usuario in usuario1 usuario2 usuario3; do\n    usermod -aG grupo $usuario\ndone\n\n# Ver miembros de un grupo\ngetent group nombre_grupo\n\n# Cambiar grupo primario de un usuario\nusermod -g nuevo_grupo usuario",
+      "descripcion": "Gestión de grupos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Eliminar usuario de grupo\ngpasswd -d usuario grupo\n\n# Eliminar grupo\ngroupdel nombre_grupo\n\n# Listar todos los grupos\ngetent group\n\n# Ver grupos del sistema (GID < 1000)\ngetent group | awk -F: '$3 < 1000 {print $1}'",
+      "descripcion": "Eliminar de grupos y grupos del sistema"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Permisos de Sudo"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Editar permisos sudo (con cuidado)\nvisudo\n\n# Ejemplo básico - usuario puede usar sudo\njperez ALL=(ALL:ALL) ALL\n\n# Usuario sin contraseña para sudo\njperez ALL=(ALL) NOPASSWD:ALL\n\n# Grupo completo sin contraseña\n%sudo ALL=(ALL) NOPASSWD:ALL\n\n# Solo comandos específicos\njperez ALL=(ALL) /usr/bin/systemctl restart nginx, /usr/bin/apt\n\n# Formato de línea sudoers:\n# usuario  host=(usuario_objetivo:grupo_objetivo) comandos",
+      "descripcion": "Configuración de sudoers"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver qué puede hacer un usuario con sudo\nsudo -l\n\n# Ejecutar comando como otro usuario\nsudo -u usuario comando\n\n# Ejecutar comando como root (si ya tienes acceso sudo)\nsudo comando\n\n# Convertirse en root temporalmente\nsudo su -\n\n# Ver historial de comandos sudo\ncat /var/log/auth.log | grep sudo",
+      "descripcion": "Uso de sudo"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Buenas Prácticas"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. Usa siempre 'visudo' para editar /etc/sudoers — valida la sintaxis\n2. NUNCA des acceso root directo — usa sudo\n3. Aplica el principio de mínimo privilegio\n4. Los UID 0-999 son del sistema, начина с 1000 para usuarios normales\n5. Establece fechas de expiración para cuentas temporales\n6. Audita regularmente los usuarios activos: lastlog, who\n7. Elimina usuarios que ya no necesiten acceso"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Ejemplo: Script de Aprovisionamiento"
+    },
+    {
+      "tipo": "comando",
+      "valor": "#!/bin/bash\n# Script para crear usuario de aplicación\n\nUSUARIO=\"app_nginx\"\nGRUPO=\"www-data\"\nHOME_DIR=\"/opt/aplicaciones/nginx\"\n\n# Verificar si el usuario ya existe\nif id \"$USUARIO\" &>/dev/null; then\n    echo \"El usuario $USUARIO ya existe\"\nelse\n    # Crear grupo si no existe\n    getent group \"$GRUPO\" || groupadd \"$GRUPO\"\n    \n    # Crear usuario\n    useradd -m -d \"$HOME_DIR\" -s /usr/sbin/nologin -g \"$GRUPO\" \"$USUARIO\"\n    \n    echo \"Usuario $USUARIO creado correctamente\"\nfi\n\n# Establecer permisos del directorio\nchown -R \"$USUARIO:$GRUPO\" \"$HOME_DIR\"",
+      "descripcion": "Script de aprovisionamiento de usuario"
+    }
+  ]
+}

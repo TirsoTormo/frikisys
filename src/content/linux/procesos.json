@@ -1,0 +1,146 @@
+{
+  "id": "procesos",
+  "titulo": "Gestión de Procesos en Linux",
+  "categoria": "linux",
+  "descripcion": "Monitorear, controlar y optimizar procesos del sistema",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "Todo lo que se ejecuta en Linux es un proceso. Dominar su gestión es esencial para mantener servidores estables y resolver problemas de rendimiento."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Conceptos Fundamentales"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Proceso: instancia de un programa en ejecución\n# PID: Process ID - identificador único\n# PPID: Parent PID - proceso padre\n# UID/GID: usuario y grupo del proceso\n\n# Proceso especial: PID 1 es init/systemd (primer proceso)\n\n# Ver el propio PID\n$$\n\n# Ver PID de un proceso por nombre\npgrep nginx\npgrep -u www-data nginx",
+      "descripcion": "Conceptos de procesos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "ps - Lista de Procesos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# ps aux - todos los procesos (formato BSD)\nps aux\n\n# ps -ef - todos los procesos (formato System V)\nps -ef\n\n# ps -eFH - formato completo con threads\nps -eFH\n\n# Ver proceso específico\nps aux | grep nginx\nps -ef | grep mysql\n\n# Formato personalizado\nps -eo pid,user,ppid,%cpu,%mem,cmd\nps -eo pid,user,cmd --sort=-%cpu | head -20\n\n# Ver árbol de procesos\nps -ef --forest\npstree\npstree -p                   # Con PIDs",
+      "descripcion": "Listado de procesos con ps"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Campos útiles de ps:\n# PID    - ID del proceso\n# USER   - Propietario\n# %CPU   - Uso de CPU\n# %MEM   - Uso de memoria\n# VSZ    - Memoria virtual (KB)\n# RSS    - Memoria real (KB)\n# TTY    - Terminal (?, pts/0, tty1)\n# STAT   - Estado\n# START  - Hora de inicio\n# TIME   - Tiempo CPU\n# CMD    - Comando\n\n# Estados de proceso (STAT):\n# R - Running/Ejecutable\n# S - Sleeping (interrumpible)\n# D - Disk sleep (no interrumpible)\n# Z - Zombie\n# T - Stopped\n# I - Idle\n# < - Alta prioridad\n# N - Baja prioridad",
+      "descripcion": "Campos de ps"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "top y htop - Monitoreo en Tiempo Real"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# top - monitor de procesos en vivo\ntop\n\n# Controles dentro de top:\n# q           - Salir\n# h           - Ayuda\n# k           - Matar proceso\n# r           - Renice (cambiar prioridad)\n# f           - Configurar campos\n# o           - Ordenar por columna\n# 1           - Ver CPUs individuales\n# M           - Ordenar por memoria\n# P           - Ordenar por CPU\n# T           - Ordenar por tiempo\n\n# Opciones útiles\ntop -d 2                 # Actualizar cada 2 segundos\ntop -p 1234              # Monitorear proceso específico\ntop -u www-data          # Solo usuario\ntop -b -n 5              # Modo batch (para logs)",
+      "descripcion": "Uso de top"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# htop - versión mejorada de top (instalar si no está)\nhtop\n\n# Controles de htop:\n# Flechas    - Navegar\n# F1         - Ayuda\n# F2         - Configuración\n# F3         - Buscar proceso\n# F4         - Filtrar\n# F5         - Ver árbol\n# F6         - Ordenar por columna\n# F9         - Matar proceso\n# F10        - Salir\n\n# Opciones\nhtop -d 10              # Actualizar cada 100ms\nhtop -u www-data        # Filtrar por usuario\nhtop -p 1234,5678       # Monitorear PIDs específicos",
+      "descripcion": "Uso de htop"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# atop - monitor avanzado (instalar si no está)\natop\n\n# Muestra: CPU, memoria, disco, red, procesos\n# Muy útil para diagnóstico post-incidente\n\n# btop/btop - moderno y visual\nbtop\n\n# nmon - monitor de sistemas IBM\nnmon",
+      "descripcion": "Alternativas a top"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "kill - Terminar Procesos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# kill - enviar señal a proceso por PID\nkill PID\n\n# Señales comunes:\n# SIGTERM (15) - Terminación limpia (default)\n# SIGKILL (9)  - Forzar terminación (no puede ignorarse)\n# SIGHUP (1)   - Recargar configuración\n# SIGINT (2)   - Interrumpir (Ctrl+C)\n# SIGSTOP (19) - Pausar proceso\n# SIGCONT (18) - Continuar proceso pausado\n\n# Ejemplos\nkill 1234              # Enviar SIGTERM a 1234\nkill -9 1234           # Forzar terminación\nkill -SIGTERM 1234     # Explicitamente\nkill -s TERM 1234      # Otra forma\n\n# Múltiples procesos\nkill -9 1234 5678 9012",
+      "descripcion": "Señales y kill"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# killall - matar por nombre\nkillall nginx\nkillall -9 nginx\nkillall -u www-data nginx   # Solo de usuario\n\n# pkill - matar con patrones\npkill nginx\npkill -9 nginx\npkill -f \"python.*server\"    # Patrón regex\npkill -u www-data            # Todos de usuario\n\n# xkill - matar ventana clickeando (X11)\nxkill\n\n# Precauciones:\n# -9 (SIGKILL) no permite limpieza\n# -15 (SIGTERM) es más seguro\n# Verificar antes de matar (especialmente root)",
+      "descripcion": "killall y pkill"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "nice y renice - Prioridades"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# nice - ejecutar con prioridad ajustada\n# Rango: -20 (más prioridad) a 19 (menos prioridad)\n# Default: 0\n\nnice -n 10 comando          # Prioridad baja\nnice -n -10 comando         # Alta prioridad (solo root)\nnice --10 comando          # Alternativa\n\n# Valores típicos:\n# nice -20 = proceso crítico de tiempo real\n# nice 0   = normal\n# nice 19  = proceso en background muy bajo\n\n# Ejemplos\nnice -n 10 tar -czf backup.tar.gz /datos\nnice -n 19 ./script_largo.sh",
+      "descripcion": "Ejecutar con nice"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# renice - cambiar prioridad de proceso existente\n\nrenice 10 PID                 # Cambiar prioridad de PID\nrenice -10 -u www-data        # Cambiar prioridad de usuario\nrenice 5 -p 1234 5678        # Múltiples PIDs\n\n# Cambiar prioridad interactivamente\nrenice -p $$                  # Shell actual\n\n# Ver prioridad actual (campo NI en ps)\nps -eo pid,ni,cmd | head -20\n\n# Valor NI en top/htop muestra prioridad nice",
+      "descripcion": "Cambiar prioridad de proceso"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# nohup - ejecutar comando inmune a desconexión\nnohup ./script.sh &\nnohup ./script.sh > output.log 2>&1 &\n\n# Pantalla desconectada: el proceso sigue corriendo\n# El output va a nohup.out por defecto\n\n# nohup vs disown:\n# nohup: hace que SIGHUP sea ignorado\n# disown: elimina el trabajo de la tabla de jobs",
+      "descripcion": "nohup - Procesos resistentes"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "screen y tmux - Terminales Persistentes"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# screen - sesiones de terminal persistentes\n\n# Iniciar sesión\nscreen -S mi_sesion\n\n# Comandos dentro de screen:\n# Ctrl+A D        - Desconectar (dejar corriendo)\n# Ctrl+A C        - Nueva ventana\n# Ctrl+A N        - Siguiente ventana\n# Ctrl+A P        - Ventana anterior\n# Ctrl+A \"        - Lista de ventanas\n# Ctrl+A K        - Matar ventana actual\n# Ctrl+A \\        - Matar todas y salir\n# Ctrl+A ?        - Ayuda\n\n# Reconectar a sesión\nscreen -r mi_sesion\nscreen -r 12345             # Por PID\n\n# Reconnect forzado\nscreen -d -r mi_sesion\n\n# Listar sesiones\nscreen -ls",
+      "descripcion": "screen - Terminal persistente"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# tmux - multiplexor de terminal moderno\n\n# Iniciar sesión\ntmux new -s mi_sesion\ntmux new-session -s mi_sesion\n\n# Comandos (prefijo: Ctrl+B)\n# Ctrl+B D        - Desconectar\n# Ctrl+B C        - Nueva ventana\n# Ctrl+B ,        - Renombrar ventana\n# Ctrl+B W        - Lista de ventanas\n# Ctrl+B %        - Dividir vertical\n# Ctrl+B \"        - Dividir horizontal\n# Ctrl+B flechas  - Navegar panes\n# Ctrl+B X        - Cerrar pane\n# Ctrl+B ?        - Ayuda\n\n# Reconnect\ntmux attach -t mi_sesion\ntmux a -t mi_sesion\n\n# Listar sesiones\ntmux ls",
+      "descripcion": "tmux - Terminal moderno"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Compartir terminal (útil para colaboración)\n# screen\nscreen -S shared\n# Otro usuario hace:\nscreen -x shared\n\n# tmux\ntmux new -s compartido\n# Sesión compartida:\ntmux new-session -t existente\ntmux attach-session -t existente",
+      "descripcion": "Compartir sesiones"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Jobs en Background"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Background jobs\n\ncomando &                    # Ejecutar en background desde el inicio\njobs                         # Ver jobs de shell actual\nfg                           # Traer al foreground\nfg %1                        # Traer job 1\nbg                           # Enviar a background\nbg %1                        # Continuar job 1 en background\n\n# Ctrl+Z - Suspender proceso actual\n# Después: fg para continuar o bg para background\n\n# Desconectar proceso existente a background\nCtrl+Z                       # Suspender\nbg                            # Continuar en background\ndisown                       # Desconectar de shell\ndisown %1                    # Job específico",
+      "descripcion": "Jobs en background"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Diagnóstico de Problemas"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Proceso que consume muchos recursos\ntop\n# Luego presionar 'c' para ver comando completo\n\n# Procesos zombie\nps aux | grep -w Z\n# Solución: matar el proceso padre\n\n# Procesos huérfanos\nps -ef | grep defunct\n\n# Ver límites de recursos\nulimit -a\n\n# Cambiar límites (temporal)\nulimit -n 10000              # Numero de archivos abiertos\n\n# Límites permanentes en /etc/security/limits.conf\n# o /etc/systemd/system.conf (para servicios)",
+      "descripcion": "Diagnóstico"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# strace - seguir llamadas al sistema\nstrace -p PID                # Adjuntar a proceso\nstrace -c comando            # Resumen de llamadas\nstrace -f comando            # Seguir forks\nstrace -e trace=write,read -p PID   # Solo ciertas llamadas\n\n# ltrace - seguir llamadas a librerías\nltrace comando\n\n# lsof - archivos abiertos por proceso\nlsof -p PID\nlsof -c nginx\nlsof -i :80                  # Puerto\nlsof -i TCP                  # Conexiones TCP\n\n# /proc - sistema de archivos virtual\nls /proc/$$/fd              # File descriptors del shell\ncat /proc/$$/status         # Estado del proceso\ncat /proc/meminfo           # Memoria del sistema",
+      "descripcion": "Herramientas de diagnóstico"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Ejemplos Prácticos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Script para monitorear y alertar sobre procesos problemáticos\n#!/bin/bash\n\n# Alerta si algún proceso usa más del 80% CPU por más de 5 minutos\nwhile true; do\n    HIGH_CPU=$(ps -eo pcpu,pid,user,cmd --no-headers | \\\n               awk '$1 > 80 {print}')\n    if [ -n \"$HIGH_CPU\" ]; then\n        echo \"Procesos con alto CPU:\"\n        echo \"$HIGH_CPU\" | mail -s \"Alerta CPU\" admin@example.com\n    fi\n    sleep 300\ndone",
+      "descripcion": "Monitoreo de CPU"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores Frecuentes"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. Matar el proceso equivocado — Siempre verificar el PID antes de kill -9\n2. Procesos zombie — El padre no recoge al hijo; matar el padre\n3. Proceso sin respuesta — Usar Ctrl+Z, bg, y luego diagnosticar\n4. Resource limits — demasiados archivos abiertos agotan límites del sistema\n5. nice requiere permisos — Solo root puede dar prioridad alta (negativa)\n6. Ignorar SIGHUP — Los procesos pueden morir al desconectar sin nohup"
+    }
+  ]
+}

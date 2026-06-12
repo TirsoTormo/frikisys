@@ -1,0 +1,128 @@
+{
+  "id": "redes",
+  "titulo": "Redes en Linux: Configuración y Diagnóstico",
+  "categoria": "linux",
+  "descripcion": "Comandos esenciales para configurar y diagnosticar redes en Linux",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "La gestión de red es una de las tareas más críticas para un SysAdmin. Linux ofrece un conjunto completo de herramientas para configurar interfaces, diagnosticar conectividad y gestionar reglas de firewall."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "ip - La Herramienta Moderna"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver todas las interfaces y direcciones IP\nip addr\nip addr show\nip a\n\n# Ver solo interfaces UP\nip link ls up\n\n# Ver información de una interfaz específica\nip addr show eth0\n\n# Ver solo direcciones IPv4\nip -4 addr\n\n# Ver solo IPv6\nip -6 addr\n\n# Ver tablas de enrutamiento\nip route\nip route show\nip r",
+      "descripcion": "Comandos ip addr y route"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Activar/desactivar interfaz\nsudo ip link set eth0 up\nsudo ip link set eth0 down\n\n# Cambiar MTU\nsudo ip link set eth0 mtu 9000\n\n# Asignar dirección IP\nsudo ip addr add 192.168.1.100/24 dev eth0\n\n# Eliminar dirección IP\nsudo ip addr del 192.168.1.100/24 dev eth0\n\n# Añadir gateway\nsudo ip route add default via 192.168.1.1\n\n# Eliminar gateway\nsudo ip route del default via 192.168.1.1\n\n# Añadir ruta estática\nsudo ip route add 10.0.0.0/8 via 192.168.1.1 dev eth0",
+      "descripcion": "Configuración de interfaces"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver vecino (tabla ARP)\nip neigh show\nip neighbor\n\n# Añadir entrada ARP estática\nsudo ip neigh add 192.168.1.1 lladdr aa:bb:cc:dd:ee:ff dev eth0\n\n# Eliminar entrada ARP\nsudo ip neigh del 192.168.1.1 dev eth0\n\n# Monitorear cambios en la tabla neigh\nip monitor all\nip monitor neigh",
+      "descripcion": "Tabla ARP y vecinos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "ss - Estadísticas de Sockets"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# ss reemplaza a netstat (más rápido y moderno)\n\n# Ver todos los sockets listening\nss -ltn\nss -ltn sport = :80\n\n# Opciones:\n# -l = Solo sockets listening\n# -t = TCP\n# -u = UDP\n# -x = Unix\n# -n = No resolver nombres\n# -p = Mostrar proceso\n\n# Ver todas las conexiones\nss -tan\nss -uan                        # UDP\n\n# Ver conexiones establecidas\nss -tstate established",
+      "descripcion": "Estadísticas de sockets"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver sockets con proceso\nss -ltpn\nss -ltpn sport = :22\n\n# Ver conexiones por estado\nss -t state established\nss -t state time-wait\nss -t state syn-sent\n\n# Filtros avanzados\nss dst 192.168.1.100\nss src 192.168.1.50:80\nss :443                  # Puerto 443\nss -4                   # Solo IPv4\nss -6                   # Solo IPv6\n\n# Resumen de conexiones por estado\nss -s\n# Total: 245 (kernel: 248)\n# TCP:   12 (establ: 5, timewait: 3)",
+      "descripcion": "Filtros y procesos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "netstat (Legacy)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# netstat aún está disponible pero es más lento\n# Usar ss como alternativa moderna\n\nnetstat -tuln                    # Listening ports\nnetstat -an                      # Todas las conexiones\nnetstat -rn                      # Tabla de rutas\nnetstat -i                        # Estadísticas de interfaces\nnetstat -s                        # Resumen por protocolo\n\n# Ver proceso en un puerto\nnetstat -tulpn | grep :80\nlsof -i :80",
+      "descripcion": "netstat (heredado)"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Diagnóstico de Conectividad"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ping básico\nping google.com\nping -c 4 google.com          # 4 paquetes\nping -i 0.5 google.com         # Cada 0.5 segundos\nping -f google.com             # Flood ping (solo root)\n\n# Ping con tamaño de paquete\nping -s 1000 google.com        # 1000 bytes de datos\n\n# Verificar MTU\nping -M do -s 1472 google.com  # No fragmentar\n\n# Traceroute\ntraceroute google.com\ntraceroute -I google.com       # ICMP (más parecido a Windows)\ntraceroute -T google.com       # TCP SYN\ntraceroute -n google.com       # Sin resolución DNS\n\n# Tracepath (no requiere root)\ntracepath google.com",
+      "descripcion": "Ping y traceroute"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# DNS lookup básico\nnslookup google.com\ndig google.com\ndig google.com A               # Solo registro A\ndig google.com MX              # Solo registros MX\ndig google.com +short          # Solo la respuesta\n\n# Resolución inversa\ndig -x 8.8.8.8\n\n# Ver servidores DNS configurados\ncat /etc/resolv.conf\n\n# Query DNS específico\nhost google.com 8.8.8.8        # Usar servidor DNS específico\n\n# Herramienta moderna de DNS\nresolvectl status",
+      "descripcion": "Diagnóstico DNS"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Escaneo de puertos (instalar nmap si no está)\nnmap -sT localhost             # Escaneo TCP connect\nnmap -sU localhost            # Escaneo UDP\nnmap -sV localhost            # Detectar versiones\nnmap -O localhost            # Detectar SO\nnmap -p 1-1000 localhost      # Rango de puertos\nnmap -p 22,80,443 localhost   # Puertos específicos\nnmap -A localhost             # Escaneo completo (agresivo)\n\n# nc (netcat) - navaja suiza de red\nnc -zv google.com 443        # Verificar si puerto está abierto\nnc -zv google.com 80 443\nnc -l 8080                   # Escuchar en puerto\nnc server.com 8080           # Conectar como cliente\n\n# curl para HTTP\ncurl -I https://google.com    # Headers HTTP\ncurl -v https://google.com    # Verbose",
+      "descripcion": "Escaneo de puertos y netcat"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "iptables - Firewall Básico"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# iptables es el frontend clásico para netfilter\n# Las distribuciones modernas usan nftables o firewalld\n\n# Tablas disponibles:\n# filter (default) - filtrado de paquetes\n# nat - traducción de direcciones\n# mangle - modificación de paquetes\n# raw - exemptions de seguimiento\n\n# Listar reglas\nsudo iptables -L              # filter (default)\nsudo iptables -L -n           # Sin resolución de nombres\nsudo iptables -L -v           # Verbose\nsudo iptables -t nat -L       # Tabla NAT\n\n# Cadenas:\n# INPUT - paquetes entrantes\n# OUTPUT - paquetes salientes\n# FORWARD - paquetes enrutados a través\n# PREROUTING - antes de rutear (NAT)\n# POSTROUTING - después de rutear (NAT)",
+      "descripcion": "Conceptos de iptables"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Reglas básicas defilter\n\n# Permitir localhost\nsudo iptables -A INPUT -i lo -j ACCEPT\n\n# Permitir conexiones establecidas\nsudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT\n\n# Permitir SSH (puerto 22)\nsudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT\n\n# Permitir HTTP/HTTPS\nsudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT\nsudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT\n\n# Denegar todo lo demás (política por defecto)\nsudo iptables -P INPUT DROP\n\n# Ver reglas numeradas\nsudo iptables -L -n --line-numbers",
+      "descripcion": "Reglas básicas de firewall"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Eliminar regla (por número)\nsudo iptables -D INPUT 3\n\n# Eliminar regla específica\nsudo iptables -D INPUT -p tcp --dport 80 -j ACCEPT\n\n# Limpiar todas las reglas\nsudo iptables -F\n\n# Guardar reglas (persistencia)\n# Debian/Ubuntu:\nsudo netfilter-persistent save\n\n# CentOS/RHEL:\nsudo service iptables save\n\n# Restaurar reglas\nsudo iptables-restore < /backup/iptables.backup",
+      "descripcion": "Gestión de reglas"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# NAT básico (compartir internet)\n# eth0 = WAN, eth1 = LAN\n\n# Activar IP forwarding\necho 1 > /proc/sys/net/ipv4/ip_forward\n\n# NAT (masquerading)\nsudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\n\n# DNAT (redirigir tráfico)\nsudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 192.168.1.100:8080\n\n# SNAT (Source NAT)\nsudo iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source 1.2.3.4",
+      "descripcion": "NAT y Port Forwarding"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "NetworkManager y nmcli"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# nmcli - gestión de NetworkManager\n\n# Ver conexiones\nnmcli con show\nnmcli con show --active\n\n# Ver estado de dispositivos\nnmcli dev status\nnmcli dev show\n\n# Activar/desactivar conexión\nnmcli con up \"Conexión cableada 1\"\nnmcli con down \"Conexión cableada 1\"\n\n# Conectar a WiFi\nnmcli dev wifi list\nnmcli dev wifi connect SSID password \"contraseña\"\n\n# Ver IP actual\nnmcli -p dev show eth0 | grep IP4",
+      "descripcion": "NetworkManager con nmcli"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear conexión estática\nnmcli con add type ethernet con-name mi-red \\\n  ifname eth0 ip4 192.168.1.100/24 gw4 192.168.1.1\n\n# Añadir DNS\nnmcli con mod mi-red ipv4.dns \"8.8.8.8,8.8.4.4\"\n\n# Añadir búsqueda DNS\nnmcli con mod mi-red ipv4.dns-search \"midominio.local\"\n\n# Configurar DHCP\nnmcli con mod mi-red ipv4.method auto\n\n# Configurar IP estática\nnmcli con mod mi-red ipv4.method manual\nnmcli con mod mi-red ipv4.addresses \"192.168.1.100/24\"\nnmcli con mod mi-red ipv4.gateway \"192.168.1.1\"\n\n# Recargar conexión\nnmcli con up mi-red",
+      "descripcion": "Configuración de conexiones"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Diagnóstico Rápido"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Checklist de conectividad\n# 1. Ver IP\nip addr show\n\n# 2. Ver gateway\nip route | grep default\n\n# 3. Ping gateway\nping -c 3 192.168.1.1\n\n# 4. Ping DNS público\nping -c 3 8.8.8.8\n\n# 5. Probar DNS\nnslookup google.com\n\n# 6. Ver firewall\nsudo iptables -L -n\n\n# 7. Ver puertos listening\nss -tulpn\n\n# 8. Probar conectividad a puerto\nnc -zv google.com 443\ncurl -I https://google.com",
+      "descripcion": "Diagnóstico paso a paso"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores Frecuentes"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. Firewall bloqueando tráfico — verificar iptables/nftables/firewalld\n2. DNS mal configurado — /etc/resolv.conf tiene los servidores incorrectos\n3. MTU incorrecto — causar fragmentación y problemas de conectividad\n4. Gateway mal configurado — sin acceso a internet pero sí a red local\n5. Interfaz en estado DOWN — verificar 'ip link set eth0 up'\n6. IP duplicada en la red — causa conflictos intermitentes"
+    }
+  ]
+}

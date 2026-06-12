@@ -1,0 +1,193 @@
+version: 1
+plan:
+  name: 'Frikisys - Wiki SysAdmin en Español'
+  max_concurrency: 3
+  max_consecutive_failures: 2
+  max_cycles: 10
+  verifier_config:
+    default_verifiers: [verifier]
+    audit_sample_rate: 0.0
+
+tasks:
+  - id: frontend-ui
+    title: 'Construir UI base de Frikisys'
+    prompt: |
+      Eres el frontend-dev de Frikisys, una wiki de SysAdmin/SysOps en español.
+
+      PROYECTO: C:\Users\Tirso\.minimax-agent\projects\sysops-wiki
+      
+      DISEÑO:
+      - Estilo: Dark minimalista con toques pixel art
+      - Colores:
+        * Fondo: #0f0f0f
+        * Cards: #1a1a1a
+        * Bordes: #2a2a2a
+        * Texto: #e5e5e5 (principal), #888888 (secundario)
+        * Acento: #6b7280
+      - Tipografía: IBM Plex Mono (Google Fonts)
+      - Pixel art: Bordes sutiles, separadores con patrón de puntos
+
+      COMPONENTES A CONSTRUIR:
+      1. Navbar con logo "Frikisys" y búsqueda
+      2. Sidebar con categorías: Linux, Virtualización
+      3. Grid de artículos (cards con título, categoría, descripción)
+      4. Visor de artículo (título, contenido markdown, ejemplos de código)
+      5. Footer minimalista
+
+      FUNCIONALIDAD:
+      - Navegación entre secciones
+      - Vista de artículo con sintaxis highlighting para código
+      - Responsive design
+      - Animaciones sutiles (no neón)
+
+      USA TAILWIND CSS existente en el proyecto.
+      Trabaja en src/components/
+      
+      OUTPUT: Componentes React funcionales, listos para integrarcontenido real.
+
+    assigned_to: frontend-dev
+    verified_by: verifier
+    verify_prompt: 'Verificar que los componentes React compilan sin errores, usan los colores correctos, son responsivos y el diseño es dark/clean.'
+    timeout_ms: 1800000
+
+  - id: contenido-linux
+    title: 'Crear contenido de Linux'
+    prompt: |
+      Eres el content-writer de Frikisys, especializado en Linux y SysAdmin.
+
+      CARPETA DESTINO: C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\content\linux\
+
+      ESTILO:
+      - Idioma: Español completo y claro
+      - Tono: Técnico pero accesible (como documentación de referencia)
+      - Estructura: Cada artículo tiene:
+        * Título claro
+        * Introducción breve (qué es y para qué sirve)
+        * Comandos/ejemplos prácticos con código
+        * Consejos comunes y errores frecuentes
+      - Imágenes: SOLO si explican algo complejo (diagrama de arquitectura, output de terminal importante)
+
+      ARTÍCULOS A CREAR (formato .json para React):
+      1. intro-linux.json - Introducción a Linux para SysAdmins
+      2. comandos-basicos.json - 20 comandos esenciales del día a día
+      3. gestion-usuarios.json - Crear, modificar, eliminar usuarios
+      4. permisos.json - chmod, chown, permisos especiales (SUID, SGID, sticky bit)
+      5. systemd.json - systemctl, servicios, logs con journalctl
+      6. redes.json - ip, netstat, ss, iptables básico
+      7. disco-almacenamiento.json - df, du, lsblk, montaje de dispositivos
+      8. procesos.json - ps, top, kill, nice, systemctl
+      9. scripts-bash.json - Fundamentos de scripting Bash
+      10. ssh.json - Configuración, claves SSH, túnel
+
+      FORMATO JSON:
+      ```json
+      {
+        "id": "comandos-basicos",
+        "titulo": "Comandos Básicos de Linux",
+        "categoria": "linux",
+        "descripcion": "Los 20 comandos que usarás cada día como SysAdmin",
+        "contenido": [
+          {
+            "tipo": "texto",
+            "valor": "Introducción..."
+          },
+          {
+            "tipo": "comando",
+            "valor": "ls -la /var/log",
+            "descripcion": "Lista archivos con detalles"
+          }
+        ]
+      }
+      ```
+      
+      OUTPUT: 10 archivos JSON con contenido real, útil y en español.
+
+    assigned_to: content-writer
+    verified_by: verifier
+    verify_prompt: 'Verificar que el contenido está en español, es técnicamente correcto, tiene ejemplos funcionales y sigue la estructura definida.'
+    timeout_ms: 1800000
+
+  - id: contenido-virtualizacion
+    title: 'Crear contenido de Virtualización'
+    prompt: |
+      Eres el content-writer de Frikisys, especializado en virtualización.
+
+      CARPETA DESTINO: C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\content\virtualizacion\
+
+      ESTILO:
+      - Idioma: Español completo y claro
+      - Tono: Técnico pero accesible
+      - Estructura: Cada artículo tiene:
+        * Título claro
+        * Introducción breve
+        * Comandos/ejemplos prácticos
+        * Consejos y errores frecuentes
+
+      ARTÍCULOS A CREAR (formato .json):
+      1. intro-virtualizacion.json - Qué es virtualización y tipos (KVM, VirtualBox, VMware, Docker)
+      2. kvm.json - KVM en Linux: instalación, crear VMs, virsh
+      3. docker.json - Docker básico: contenedores, imágenes, docker-compose
+      4. contenedores.json - LXC/LXD: contenedores de sistema
+      5. vmware.json - VMware Workstation/ESXi basics
+      6. redes-virtuales.json - Bridges, NAT, VLANs en virtualización
+      7. almacenamiento-virtual.json - Discos virtuales, thin provisioning, snapshots
+
+      FORMATO JSON: Mismo que Linux (ver tarea contenido-linux)
+      
+      OUTPUT: 7 archivos JSON con contenido real y en español.
+
+    assigned_to: content-writer
+    verified_by: verifier
+    verify_prompt: 'Verificar contenido en español, técnicamente correcto, ejemplos funcionales.'
+    timeout_ms: 1800000
+
+  - id: testing
+    title: 'Verificar build y funcionalidad'
+    prompt: |
+      Eres el tester de Frikisys.
+
+      PROYECTO: C:\Users\Tirso\.minimax-agent\projects\sysops-wiki
+      
+      TAREAS:
+      1. Verificar que npm run build funciona sin errores
+      2. Verificar que todos los imports son correctos
+      3. Verificar que no hay console errors
+      4. Crear checklist de testing:
+         - Navegación: funciona click en sidebar, navbar, artículos
+         - Responsive: se ve bien en móvil (375px), tablet (768px), desktop (1024px+)
+         - Performance: tiempo de carga < 3 segundos
+         - Accesibilidad: contraste de colores suficiente, alt en imágenes
+         - SEO: meta tags, títulos únicos
+
+      OUTPUT: Reporte de testing con:
+      - Estado del build (PASS/FAIL)
+      - Issues encontrados (si hay)
+      - Checklist de testing para QA manual
+
+    assigned_to: tester
+    verified_by: verifier
+    verify_prompt: 'Re-ejecutar npm run build, verificar que no hay errores TypeScript ni de imports.'
+    timeout_ms: 900000
+
+  - id: integracion
+    title: 'Integrar contenido con UI'
+    prompt: |
+      Integrar el contenido JSON con los componentes React del frontend.
+      
+      PROYECTO: C:\Users\Tirso\.minimax-agent\projects\sysops-wiki
+      
+      Pasos:
+      1. Crear src/data/articles.ts que exporte todos los artículos
+      2. Modificar los componentes para cargar contenido dinámicamente
+      3. Implementar router para navegación (/linux/:slug, /virtualizacion/:slug)
+      4. Asegurar que la búsqueda funciona contra el contenido real
+      
+      Depende de: frontend-ui, contenido-linux, contenido-virtualizacion
+      
+      OUTPUT: App funcional con contenido real integrado.
+
+    assigned_to: frontend-dev
+    depends_on: [frontend-ui, contenido-linux, contenido-virtualizacion]
+    verified_by: verifier
+    verify_prompt: 'Verificar navegación entre secciones, artículos se abren correctamente, búsqueda funciona.'
+    timeout_ms: 1200000

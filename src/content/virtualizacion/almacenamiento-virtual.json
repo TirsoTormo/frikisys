@@ -1,0 +1,79 @@
+{
+  "id": "almacenamiento-virtual",
+  "titulo": "Almacenamiento Virtual: Discos y Snapshots",
+  "categoria": "virtualizacion",
+  "descripcion": "Gestión de almacenamiento, thin provisioning y snapshots",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "El almacenamiento es uno de los componentes más críticos en virtualización. Elegir el tipo de disco, el formato y el aprovisionamiento impacta directamente en el rendimiento y uso de recursos."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Tipos de Formato de Disco"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Formatos comunes en KVM/libvirt:\n# - raw: sin formato, máximo rendimiento\n# - qcow2: copy-on-write, soporta snapshots\n# - qed: antiguo, no recomendado\n# - vmdk: compatible con VMware\n\n# Crear disco raw\nqemu-img create -f raw /var/lib/libvirt/images/vm.raw 50G\n\n# Crear disco qcow2\nqemu-img create -f qcow2 /var/lib/libvirt/images/vm.qcow2 50G\n\n# Convertir entre formatos\nqemu-img convert -f raw -O qcow2 origen.raw destino.qcow2\n\n# Info de una imagen\nqemu-img info /var/lib/libvirt/images/vm.qcow2",
+      "descripcion": "Formatos de disco virtual"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Thin Provisioning vs Thick"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Thick Provisioning (espacio reservado)\nqemu-img create -f qcow2 -o preallocation=full disco.thick 100G\n\n# Thin Provisioning (crece según uso)\nqemu-img create -f qcow2 disco.thin 100G\n# Solo usa el espacio que realmente ocupa\n\n# Convertir thin a thick (no reversible)\nqemu-img convert -O qcow2 -o preallocation=full disco.thin disco.thick\n\n# Ver espacio real usado\nqemu-img info disco.qcow2 | grep \"virtual size\"",
+      "descripcion": "Aprovisionamiento de discos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Gestión con libvirt"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Listar volúmenes\nvirsh vol-list default\nvirsh vol-info mi-disco\n\n# Crear nuevo volumen\nvirsh vol-create-as default nuevo-disco 20G --format qcow2\n\n# Clonar volumen\nvirsh vol-clone origen.qcow2 destino.qcow2\n\n# Eliminar volumen\nvirsh vol-delete mi-disco\n\n# Resize disco\nvirsh vol-resize mi-disco 40G --pool default\n\n# Adjuntar disco a VM\nvirsh attach-disk vm-name /path/disco.qcow2 vdb --cache none",
+      "descripcion": "Gestionar almacenamiento con virsh"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Snapshots"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Snapshot interno (qcow2)\nvirsh snapshot-create vm-name\nvirsh snapshot-create-as vm-name --name \"antes-update\"\nvirsh snapshot-list vm-name\n\n# Revertir a snapshot\nvirsh snapshot-revert vm-name antes-update\n\n# Eliminar snapshot\nvirsh snapshot-delete vm-name antes-update\n\n# Snapshot externo (requiere qemu-img)\nqemu-img snapshot -c /path/disco.qcow2 nombre-snapshot\nqemu-img snapshot -a /path/disco.qcow2 nombre-snapshot\nqemu-img snapshot -d /path/disco.qcow2 nombre-snapshot",
+      "descripcion": "Crear y gestionar snapshots"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Storage Pools"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Pool de directorio\nvirsh pool-define-as default dir - - - - /var/lib/libvirt/images\nvirsh pool-start default\nvirsh pool-autostart default\n\n# Pool NFS\nvirsh pool-define-as nfs-pool netfs - - - - /mnt/nfs-share\nvirsh pool-start nfs-pool\n\n# Pool con LVM\nvirsh pool-define-as lvm-pool logical - - /dev/vg0 /dev/vg0\nvirsh pool-start lvm-pool\n\n# Listar y gestionar pools\nvirsh pool-list --all\nvirsh pool-info default\nvirsh pool-dumpxml default    # Ver configuración XML",
+      "descripcion": "Storage pools en libvirt"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Optimización de Rendimiento"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Cache del host (en XML de VM)\n# none: sin cache, máximo rendimiento E/S\n# writethrough: cache+escritura, seguro\n# writeback: cache total, rápido pero riesgo\n<driver name='qemu' type='qcow2' cache='none'/>\n\n# IO Scheduler para SSDs\nsudo echo \"none\" > /sys/block/sda/queue/scheduler\n\n# IO Thread (mejora rendimiento)\n# En XML de VM:\n<iotune>\n  <total_bytes_sec>104857600</total_bytes_sec>\n  <read_bytes_sec>52428800</read_bytes_sec>\n  <write_bytes_sec>52428800</write_bytes_sec>\n</iotune>\n\n# Discos virtio\n<model type='virtio'/>",
+      "descripcion": "Optimizar rendimiento de almacenamiento"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Compresión y Cifrado"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear disco con compresión LZ4\nqemu-img create -f qcow2 -o compression_type=lz4 disco-comprimido.qcow2 50G\n\n# Cifrado del disco\nqemu-img create -f qcow2 -o encryption=on disco-cifrado.qcow2 50G\n# Te pedirá contraseña al iniciar la VM\n\n# Convertir disco sin cifrar a cifrado\nqemu-img convert -O qcow2 -o encryption=on origen.qcow2 destino.qcow2",
+      "descripcion": "Compresión y cifrado de datos"
+    },
+    {
+      "tipo": "info",
+      "valor": "Usa qcow2 + thin provisioning para desarrollo. Para producción crítica usa thick + RAID. Los snapshots son esenciales antes de actualizaciones."
+    }
+  ]
+}

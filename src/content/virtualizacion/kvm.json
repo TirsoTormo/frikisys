@@ -1,0 +1,221 @@
+{
+  "id": "kvm",
+  "titulo": "KVM: Virtualización en Linux",
+  "categoria": "virtualizacion",
+  "descripcion": "Guía completa de KVM: instalación, creación de VMs, gestión con virsh y virt-manager",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "KVM (Kernel-based Virtual Machine) es la solución de virtualización nativa de Linux. Combina KVM (módulo del kernel para virtualización por hardware) con QEMU (emulación de hardware), ofreciendo rendimiento casi nativo para ejecutar múltiples máquinas virtuales."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Requisitos del sistema"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Para usar KVM necesitas un procesador con extensiones de virtualización por hardware (Intel VT-x o AMD-V) y suficiente RAM y disco para las VMs que quieras ejecutar."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Verificar soporte de CPU\negrep -c '(vmx|svm)' /proc/cpuinfo\n# Resultado > 0 significa que tu CPU soporta virtualización",
+      "descripcion": "Verificar soporte de virtualización por hardware"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Verificar módulos del kernel cargados\nlsmod | grep kvm\n# Deberías ver kvm y kvm_intel (o kvm_amd)",
+      "descripcion": "Verificar que módulos KVM están cargados"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Instalación"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ubuntu/Debian\nsudo apt update\nsudo apt install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager",
+      "descripcion": "Instalar KVM y herramientas asociadas en distribuciones basadas en Debian"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Fedora/RHEL/CentOS\nsudo dnf install qemu-kvm libvirt virt-install bridge-utils virt-manager",
+      "descripcion": "Instalar KVM en distribuciones basadas en Red Hat"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Agregar usuario al grupo libvirt (evita usar sudo con virsh)\nsudo usermod -aG libvirt $USER\nsudo usermod -aG kvm $USER\n# Cerrar sesión y volver a entrar para aplicar cambios",
+      "descripcion": "Agregar usuario a los grupos necesarios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Verificar que libvirtd está corriendo\nsudo systemctl enable --now libvirtd\nsudo systemctl status libvirtd",
+      "descripcion": "Habilitar e iniciar el servicio libvirtd"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Crear una VM con virt-install"
+    },
+    {
+      "tipo": "texto",
+      "valor": "virt-install es la herramienta de línea de comandos para crear VMs en KVM. Permite especificar todos los parámetros de la máquina virtual: memoria, CPU, disco, red, imagen ISO, etc."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear VM con virt-install\nvirt-install \\\n  --name mi-vm-ubuntu \\\n  --ram 2048 \\\n  --vcpus 2 \\\n  --disk path=/var/lib/libvirt/images/ubuntu22.qcow2,size=20 \\\n  --cdrom /path/to/ubuntu-22.04.iso \\\n  --network network=default \\\n  --graphics vnc \\\n  --os-variant ubuntu22.04",
+      "descripcion": "Crear máquina virtual Ubuntu con virt-install"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Opciones comunes de virt-install:\n# --name: nombre de la VM\n# --ram: memoria RAM en MB\n# --vcpus: número de CPUs virtuales\n# --disk: ruta y tamaño del disco (size en GB)\n# --cdrom: imagen ISO para instalar el SO\n# --network: tipo de red (default, bridge, etc.)\n# --graphics: protocolo gráfico (vnc, spice, none)\n# --os-variant: variante del SO (ubuntu22.04, debian11, etc.)",
+      "descripcion": "Descripción de las opciones principales de virt-install"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear VM con archivo kickstart (instalación desatendida)\nvirt-install \\\n  --name mi-servidor \\\n  --ram 4096 \\\n  --vcpus 4 \\\n  --disk path=/var/lib/libvirt/images/servidor.qcow2,size=50 \\\n  --location 'http://ftp.es.debian.org/debian/dists/stable/main/installer-amd64/' \\\n  --extra-args 'ks=http://servidor/ks.cfg' \\\n  --network bridge=br0",
+      "descripcion": "Crear VM con instalación automatizada mediante kickstart"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Gestión con virsh"
+    },
+    {
+      "tipo": "texto",
+      "valor": "virsh es la herramienta principal para gestionar VMs de KVM desde la línea de comandos. Permite iniciar, detener, pausar, clonar y eliminar máquinas virtuales."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Listar VMs (todas, solo activas, solo inactivas)\nvirsh list --all\nvirsh list\nvirsh list --inactive",
+      "descripcion": "Listar máquinas virtuales"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Iniciar y detener VMs\nvirsh start mi-vm-ubuntu\nvirsh shutdown mi-vm-ubuntu\nvirsh reboot mi-vm-ubuntu\nvirsh destroy mi-vm-ubuntu  # apagado forzado",
+      "descripcion": "Control de energía de máquinas virtuales"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Pausar y continuar VMs\nvirsh suspend mi-vm-ubuntu\nvirsh resume mi-vm-ubuntu",
+      "descripcion": "Pausar y reanudar VMs"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver información de una VM\nvirsh dominfo mi-vm-ubuntu\nvirsh dumpxml mi-vm-ubuntu  # exportar configuración XML\nvirsh edit mi-vm-ubuntu    # editar configuración XML",
+      "descripcion": "Obtener información detallada de una VM"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Clonar una VM\nvirt-clone \\\n  --original mi-vm-ubuntu \\\n  --name mi-vm-clon \\\n  --file /var/lib/libvirt/images/clon.qcow2",
+      "descripcion": "Clonar una máquina virtual existente"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Eliminar una VM (primero destruir, luego eliminar definicion)\nvirsh destroy mi-vm-ubuntu\nvirsh undefine mi-vm-ubuntu\nvirsh vol-delete /var/lib/libvirt/images/ubuntu22.qcow2  # eliminar disco",
+      "descripcion": "Eliminar completamente una VM y sus recursos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Gestión de almacenamiento"
+    },
+    {
+      "tipo": "texto",
+      "valor": "KVM usa formatos de disco virtual como qcow2 (recomendado, soporta snapshots y thin provisioning) y raw. El almacenamiento se gestiona mediante pools de libvirt."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Listar pools de almacenamiento\nvirsh pool-list --all\n\n# Información de un pool\nvirsh pool-info default",
+      "descripcion": "Ver pools de almacenamiento configurados"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear disco virtual\nqemu-img create -f qcow2 /var/lib/libvirt/images/nuevo-disco.qcow2 20G\n\n# Crear disco con thin provisioning (tamaño inicial pequeño)\nqemu-img create -f qcow2 -o preallocation=metadata /var/lib/libvirt/images/nuevo.qcow2 100G",
+      "descripcion": "Crear nuevos discos virtuales"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Adjuntar disco a una VM existente\nvirsh attach-disk mi-vm-ubuntu \\\n  --source /var/lib/libvirt/images/nuevo-disco.qcow2 \\\n  --target vdb \\\n  --targetbus virtio\n\n# Desconectar disco\nvirsh detach-disk mi-vm-ubuntu vdb",
+      "descripcion": "Adjuntar y desconectar discos a VMs"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Redimensionar disco (máquina apagada)\nqemu-img resize /var/lib/libvirt/images/mi-vm.qcow2 +10G",
+      "descripcion": "Aumentar tamaño de disco virtual"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Snapshots"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Los snapshots permiten capturar el estado de una VM en un momento dado, útil para pruebas y backups. KVM soporta snapshots internos (solo con qcow2) y externos."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear snapshot\nvirsh snapshot-create mi-vm-ubuntu \\\n  --name \"antes-actualizacion-$(date +%Y%m%d)\"",
+      "descripcion": "Crear snapshot del estado actual de la VM"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Listar snapshots\nvirsh snapshot-list mi-vm-ubuntu\n\n# Ver detalles de un snapshot\nvirsh snapshot-info mi-vm-ubuntu --snapshotname \"antes-actualizacion-20240115\"",
+      "descripcion": "Listar y ver información de snapshots"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Restaurar snapshot\nvirsh snapshot-revert mi-vm-ubuntu --snapshotname \"antes-actualizacion-20240115\"\n\n# Eliminar snapshot\nvirsh snapshot-delete mi-vm-ubuntu --snapshotname \"antes-actualizacion-20240115\"",
+      "descripcion": "Restaurar o eliminar snapshots"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Acceso VNC"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Para conectarte a la consola gráfica de una VM, usa un cliente VNC. KVM expone VNC en un puerto local o a través de libvirt."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver puerto VNC de una VM\nvirsh vncdisplay mi-vm-ubuntu\n# Retorna algo como: :0 (puerto 5900)\n# localhost:0 o 127.0.0.1:5900",
+      "descripcion": "Obtener el puerto VNC de una VM"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Conectar via SSH con túnel VNC\nssh -L 5900:localhost:5900 usuario@servidor-kvm\n# Luego en otra terminal:\nvncviewer localhost:5900",
+      "descripcion": "Conectar a VNC de forma segura a través de SSH"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "virt-manager (GUI)"
+    },
+    {
+      "tipo": "texto",
+      "valor": "virt-manager es la interfaz gráfica para gestionar VMs de KVM. Ofrece las mismas funcionalidades que virsh con una interfaz visual intuitiva."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Instalar virt-manager\nsudo apt install virt-manager\n\n# Ejecutar (desde sesión gráfica)\nvirt-manager",
+      "descripcion": "Instalar y ejecutar virt-manager"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores frecuentes"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'KVM acceleration not available'\nCausa: Extensiones de virtualización deshabilitadas o hipervisor anidado\nSolución: Habilitar Intel VT-x/AMD-V en BIOS, o si usas VM, habilitar virtualización anidada",
+      "descripcion": "Error de aceleración KVM"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'Cannot access storage file'\nCausa: Permisos incorrectos o pool no activo\nSolución: virsh pool-start default && virsh pool-autostart default",
+      "descripcion": "Error de acceso a almacenamiento"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'operation failed: cannot acquire state change lock'\nCausa: Otra operación está en curso sobre la VM\nSolución: Esperar o matar procesos varsh relacionados con la VM",
+      "descripcion": "Conflicto de bloqueo en VM"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'requested memory is greater than available memory'\nCausa: Asignaste más RAM de la disponible\nSolución: Reducir --ram o liberar memoria en el host",
+      "descripcion": "Memoria insuficiente"
+    }
+  ]
+}

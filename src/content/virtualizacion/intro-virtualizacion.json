@@ -1,0 +1,152 @@
+{
+  "id": "intro-virtualizacion",
+  "titulo": "Introducción a la Virtualización",
+  "categoria": "virtualizacion",
+  "descripcion": "Conceptos fundamentales de virtualización: tipos, hipervisores y tecnologías disponibles",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "La virtualización es una tecnología que permite crear versiones virtuales de recursos de hardware: servidores, almacenamiento, redes y sistemas operativos. Es la base de la infraestructura moderna en centros de datos y nubes públicas."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "¿Por qué virtualizar?"
+    },
+    {
+      "tipo": "texto",
+      "valor": "La virtualización ofrece múltiples beneficios para administradores de sistemas: optimización de recursos de hardware, reducción de costos operativos, aislamiento de aplicaciones, facilidad de backup y migración, y mayor flexibilidad para desplegar servicios."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Tipos de hipervisores"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Un hipervisor (o Virtual Machine Monitor) es el software que permite crear y ejecutar máquinas virtuales. Existen dos tipos principales:"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Tipo 1 (Bare-metal): El hipervisor se instala directamente sobre el hardware. Ejemplos: VMware ESXi, Microsoft Hyper-V, KVM.",
+      "descripcion": "Hipervisor que se ejecuta directamente sobre el hardware físico"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Tipo 2 (Hosted): El hipervisor se ejecuta sobre un sistema operativo host. Ejemplos: VirtualBox, VMware Workstation.",
+      "descripcion": "Hipervisor que se ejecuta como aplicación dentro de un SO"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "KVM (Kernel-based Virtual Machine)"
+    },
+    {
+      "tipo": "texto",
+      "valor": "KVM es la solución de virtualización nativa de Linux. Integrada en el kernel desde la versión 2.6.20, convierte Linux en un hipervisor de tipo 1. Ofrece rendimiento casi nativo y soporta una amplia gama de sistemas operativos invitados."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Verificar soporte de virtualización en el CPU\negrep -c '(vmx|svm)' /proc/cpuinfo\n# Si el resultado es > 0, tu CPU soporta virtualización por hardware",
+      "descripcion": "Verificar que el procesador soporta virtualización por hardware"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Instalar KVM en Ubuntu/Debian\nsudo apt install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils",
+      "descripcion": "Instalación de paquetes KVM en distribuciones basadas en Debian"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "VirtualBox"
+    },
+    {
+      "tipo": "texto",
+      "valor": "VirtualBox es un hipervisor de tipo 2 desarrollado por Oracle. Es gratuito y de código abierto (licencia GPL), ideal para desarrollo, pruebas y aprendizaje. Ofrece una interfaz gráfica intuitiva y soporte para USB, carpetas compartidas y snapshots."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Instalar VirtualBox en Ubuntu\nsudo apt install virtualbox virtualbox-ext-pack",
+      "descripcion": "Instalación de VirtualBox desde repositorios oficiales"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "VMware"
+    },
+    {
+      "tipo": "texto",
+      "valor": "VMware es líder en virtualización empresarial. VMware Workstation (escritorio) y Fusion (macOS) son hipervisores tipo 2. VMware ESXi es un hipervisor de tipo 1 para servidores, ampliamente usado en empresarial."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Descargar VMware Workstation desde vmware.com\n# Instalar dependencias\nsudo apt install build-essential linux-headers-$(uname -r)\n# Ejecutar el instalador\nsudo ./VMware-Workstation-Full-*.bundle",
+      "descripcion": "Instalación de VMware Workstation en Linux"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Docker y Contenedores"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Los contenedores representan un paradigma diferente a la virtualización tradicional. Mientras una VM虚拟iza el hardware completo, los contenedores virtualizan el sistema operativo, permitiendo mayor densidad y rendimiento."
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Instalar Docker CE\ncurl -fsSL https://get.docker.com | sh\nsudo usermod -aG docker $USER",
+      "descripcion": "Instalación rápida de Docker en Linux"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Comparativa rápida"
+    },
+    {
+      "tipo": "comando",
+      "valor": "| Tecnología | Tipo | Uso ideal | Overhead |",
+      "descripcion": "Tabla comparativa de tecnologías de virtualización"
+    },
+    {
+      "tipo": "comando",
+      "valor": "| KVM | Bare-metal | Servidores, producción | 1-5% |",
+      "descripcion": "KVM - bajo overhead, ideal para producción"
+    },
+    {
+      "tipo": "comando",
+      "valor": "| VirtualBox | Hosted | Desarrollo, pruebas | 5-15% |",
+      "descripcion": "VirtualBox - fácil de usar, mayor overhead"
+    },
+    {
+      "tipo": "comando",
+      "valor": "| Docker | SO-level | Microservicios, DevOps | 0-1% |",
+      "descripcion": "Docker - máxima eficiencia, aislamiento a nivel de SO"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores frecuentes"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'KVM acceleration not available'\nCausa: Virtualización por hardware no habilitada en BIOS/UEFI\nSolución: Reiniciar, entrar a BIOS y habilitar Intel VT-x o AMD-V",
+      "descripcion": "Error común al iniciar VMs sin aceleración hardware"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'Permission denied' al usar libvirt\nCausa: Usuario no agregado al grupo libvirt\nSolución: sudo usermod -aG libvirt $USER && newgrp libvirt",
+      "descripcion": "Error de permisos con virsh o virt-manager"
+    },
+    {
+      "tipo": "comando",
+      "valor": "Error: 'VT-x is disabled'\nCausa: Hyper-V de Windows está usando la extensión\nSolución en Windows: dism.exe /Online /Disable-Feature:Microsoft-Hyper-V",
+      "descripcion": "Conflicto entre Hyper-V y VirtualBox/VMware"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Consejos prácticos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Asignar recursos adecuados a las VMs\n# CPU: No asignar más cores de los disponibles físicamente\n# RAM: Dejar al menos 2GB para el host\n# Disco: Usar discos virtuales propios, no carpetas compartidas",
+      "descripcion": "Recomendaciones para asignar recursos a máquinas virtuales"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Buenas prácticas de virtualización\n# 1. Usar thin provisioning para discos (ahorra espacio)\n# 2. Habilitar snapshots antes de cambios importantes\n# 3. Mantener los hipervisores actualizados\n# 4. Documentar la configuración de cada VM\n# 5. Monitorizar uso de recursos",
+      "descripcion": "Mejores prácticas para administración de VMs"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "id": "redes-virtuales",
+  "titulo": "Redes Virtuales: Bridges, NAT y VLANs",
+  "categoria": "virtualizacion",
+  "descripcion": "Configuración de redes en entornos virtualizados",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "Entender las redes virtuales es crucial para virtualizar servidores. Las VMs necesitan comunicarse entre sí, con el host y con redes externas."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Bridge de Red (Bridge Networking)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear bridge en Linux\nsudo ip link add br0 type bridge\nsudo ip link set eth0 master br0\nsudo ip link set br0 up\nsudo ip addr add 192.168.1.100/24 dev br0\n\n# Configuración persistente en /etc/network/interfaces\nauto br0\niface br0 inet static\n    bridge_ports eth0\n    address 192.168.1.100\n    netmask 255.255.255.0\n    gateway 192.168.1.1\n\n# Con libvirt/KVM\nvirsh attach-interface vm-name bridge br0 --config --live",
+      "descripcion": "Crear bridge de red"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "NAT (Network Address Translation)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Configurar NAT con iptables\nsudo iptables -t nat -A POSTROUTING -s 192.168.122.0/24 -j MASQUERADE\nsudo iptables -A FORWARD -i virbr0 -o eth0 -j ACCEPT\nsudo iptables -A FORWARD -i eth0 -o virbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT\n\n# Habilitar IP forwarding\nsudo sysctl -w net.ipv4.ip_forward=1\necho \"net.ipv4.ip_forward=1\" | sudo tee -a /etc/sysctl.conf\n\n# Ver NAT activo\nsudo iptables -t nat -L -n -v",
+      "descripcion": "Configurar NAT para VMs"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "VLANs en Virtualización"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear interface VLAN\nsudo ip link add link eth0 name eth0.100 type vlan id 100\nsudo ip link set eth0.100 up\nsudo ip addr add 10.100.0.1/24 dev eth0.100\n\n# Bridge con VLAN\nsudo ip link add br100 type bridge\nsudo ip link add link eth0.100 name vnet100 type veth peer name eth0.100.1\nsudo ip link set vnet100 master br100\n\n# En ESXi: configurar switch estándar con VLAN\n# En vSphere: crear Distributed Switch con VLAN trunk",
+      "descripcion": "VLANs para aislamiento de red"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Redes en libvirt/KVM"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Redes disponibles\nvirsh net-list --all\n\n# Red NAT por defecto (192.168.122.0/24)\nvirsh net-start default\nvirsh net-autostart default\n\n# Crear red personalizada\nvirsh net-define /etc/libvirt/qemu/networks/mi-red.xml\nvirsh net-start mi-red\n\n# XML ejemplo (/etc/libvirt/qemu/networks/mi-red.xml)\n<network>\n  <name>mi-red</name>\n  <forward mode='nat'/>\n  <bridge name='virbr1' stp='on' delay='0'/>\n  <ip address='192.168.200.1' netmask='255.255.255.0'>\n    <dhcp>\n      <range start='192.168.200.100' end='192.168.200.200'/>\n    </dhcp>\n  </ip>\n</network>",
+      "descripcion": "Gestionar redes con libvirt"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "MacVTap"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# MacVTap: conexión directa a red física\n# Modos: vepa, bridge, private, passthrough\n\n# Asignar a VM con virsh\nvirsh edit vm-name\n# Cambiar interface a:\n<interface type='direct'>\n  <source dev='eth0' mode='bridge'/>\n  <model type='virtio'/>\n</interface>\n\n# O con virsh attach-interface\nvirsh attach-interface vm-name direct eth0 bridge --config",
+      "descripcion": "MacVTap para conexión directa"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Troubleshooting de Red"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver interfaces activas\nip link show\nip addr show\n\n# Ver bridge\nbrctl show\nbridge link\n\n# Diagnosticar conectividad desde VM\nping 8.8.8.8                    # Gateway\nping google.com                 # DNS\n\n# Ver reglas iptables\nsudo iptables -L -n -v\nsudo iptables -t nat -L -n -v\n\n# Logs de red\njournalctl -u NetworkManager\ndmesg | grep -i network",
+      "descripcion": "Diagnosticar problemas de red"
+    },
+    {
+      "tipo": "info",
+      "valor": "Bridge = VMs en la misma red que el host. NAT = VMs detrás del host. VLAN = aislamiento sin overhead de virtualización."
+    }
+  ]
+}

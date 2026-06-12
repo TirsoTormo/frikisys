@@ -1,0 +1,138 @@
+{
+  "id": "scripts-bash",
+  "titulo": "Scripting Bash: Fundamentos",
+  "categoria": "linux",
+  "descripcion": "Aprende a crear scripts Bash efectivos para automatización",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "El scripting Bash es la herramienta fundamental para automatizar tareas repetitivas. Un buen script puede reemplazar horas de trabajo manual con segundos de ejecución automática."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Estructura Básica"
+    },
+    {
+      "tipo": "comando",
+      "valor": "#!/bin/bash\n# Mi primer script\n\n# Comentarios: todo lo que sigue a #\n# La primera línea (#!) indica el intérprete\n\n# Echo imprime texto\n\n#!/bin/bash\necho \"Hola mundo\"\necho \"La fecha es: $(date)\"\necho \"El usuario es: $USER\"\necho 'Esto es texto literal: $USER'  # Comillas simples ignoran variables",
+      "descripcion": "Estructura básica de script"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Variables\nNOMBRE=\"Servidor Linux\"\nVERSION=1.0\nDIRECTORIO=\"/var/www\"\n\n# Usar variables\necho \"$NOMBRE versión $VERSION\"\necho \"Directorio: ${DIRECTORIO}_backup\"\n\n# Variables del sistema\n# $HOME, $PATH, $USER, $PWD, $$, $?, $0, $1, $2, $@\necho \"Mi PID: $$\"\necho \"Código de salida anterior: $?\"\necho \"Nombre del script: $0\"\necho \"Argumentos: $@\"",
+      "descripcion": "Variables"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Arrays\nSERVIDORES=(web1 web2 web3 database)\n\n# Acceder a elementos\necho \"${SERVIDORES[0]}\"    # Primer elemento\necho \"${SERVIDORES[@]}\"    # Todos los elementos\necho \"${#SERVIDORES[@]}\"   # Cantidad de elementos\n\n# Arrays asociativos (bash 4+)\ndeclare -A CONFIG\nCONFIG[host]=\"localhost\"\nCONFIG[port]=\"3306\"\necho \"${CONFIG[host]}\"",
+      "descripcion": "Arrays"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Condicionales"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# if - elif - else\n\nNOMBRE=\"admin\"\n\nif [ \"$NOMBRE\" = \"admin\" ]; then\n    echo \"Bienvenido administrador\"\nelif [ \"$NOMBRE\" = \"guest\" ]; then\n    echo \"Bienvenido invitado\"\nelse\n    echo \"Usuario desconocido\"\nfi\n\n# Operadores de comparación\n# Cadenas: =, !=, -z (vacía), -n (no vacía)\n# Números: -eq, -ne, -lt, -le, -gt, -ge\n\nEDAD=25\nif [ \"$EDAD\" -ge 18 ]; then\n    echo \"Adulto\"\nfi",
+      "descripcion": "Condicional if"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Test con archivos\nif [ -f \"/etc/passwd\" ]; then\n    echo \"El archivo existe\"\nfi\n\n# Opciones de test:\n# -e archivo     Existe\n# -f archivo     Archivo regular\n# -d directorio  Directorio\n# -r/w/x        Lectura/Escritura/Ejecución\n# -s archivo     Existe y no vacío\n# -L archivo     Enlace simbólico\n\n# Operadores lógicos\nif [ -f \"archivo1\" ] && [ -f \"archivo2\" ]; then\n    echo \"Ambos existen\"\nfi\n\nif [ \"$USER\" = \"root\" ] || [ \"$USER\" = \"admin\" ]; then\n    echo \"Acceso elevado\"\nfi\n\nif ! [ -d \"/tmp/backup\" ]; then\n    mkdir /tmp/backup\nfi",
+      "descripcion": "Test de archivos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# case - alternativa a múltiples if\n\nCOLOR=$1\n\ncase \"$COLOR\" in\n    red)\n        echo \"Color rojo\"\n        ;;\n    blue|cyan)\n        echo \"Color frío\"\n        ;;\n    *)\n        echo \"Color desconocido\"\n        ;;\nesac",
+      "descripcion": "Case"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Bucles"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# for - iterar sobre elementos\n\nfor i in 1 2 3 4 5; do\n    echo \"Número: $i\"\ndone\n\n# Range\nfor i in {1..10}; do\n    echo $i\ndone\n\n# Archivos\nfor archivo in /var/log/*.log; do\n    echo \"Procesando: $archivo\"\ndone\n\n# Con formato C-style\nfor ((i=0; i<5; i++)); do\n    echo \"Iteración $i\"\ndone",
+      "descripcion": "Bucle for"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# while - mientras condición sea verdadera\n\nCONTADOR=0\nwhile [ $CONTADOR -lt 5 ]; do\n    echo \"Contador: $CONTADOR\"\n    CONTADOR=$((CONTADOR + 1))\ndone\n\n# Leer archivo línea por línea\nwhile read -r linea; do\n    echo \"Línea: $linea\"\ndone < /etc/hosts\n\n# Until - hasta que condición sea verdadera\nCONTADOR=5\nuntil [ $CONTADOR -eq 0 ]; do\n    echo \"Countdown: $CONTADOR\"\n    CONTADOR=$((CONTADOR - 1))\ndone",
+      "descripcion": "while y until"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Continuar y romper\nfor i in {1..10}; do\n    if [ $i -eq 5 ]; then\n        continue    # Saltar esta iteración\n    fi\n    if [ $i -eq 8 ]; then\n        break       # Salir del bucle\n    fi\n    echo $i\ndone",
+      "descripcion": "Control de bucles"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Funciones"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Definir funciones\nfunction saludar {\n    echo \"¡Hola!\"\n}\n\n# Función con argumentos\nfunction saludar_usuario {\n    local nombre=$1\n    local apellido=$2\n    echo \"¡Hola ${nombre} ${apellido}!\"\n}\n\n# Llamar funciones\nsaludar\nsaludar_usuario \"Juan\" \"Pérez\"",
+      "descripcion": "Funciones básicas"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Funciones con valores de retorno\n\nfunction sumar {\n    local a=$1\n    local b=$2\n    echo $((a + b))\n}\n\nresultado=$(sumar 5 3)\necho \"Resultado: $resultado\"\n\n# Return vs echo\n# return = código de salida (0-255)\n# echo = valor de retorno\n\nfunction es_root {\n    if [ \"$EUID\" -eq 0 ]; then\n        return 0    # Éxito (true)\n    else\n        return 1    # Fallo (false)\n    fi\n}\n\nif es_root; then\n    echo \"Eres root\"\nfi",
+      "descripcion": "Funciones con返回值"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Entrada/Salida"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Leer entrada del usuario\n\nread -p \"Ingresa tu nombre: \" nombre\nread -p \"Ingresa tu edad: \" edad\nread -s -p \"Contraseña: \" password   # -s = no mostrar input\necho\n\n# Argumentos del script\n# $0 = nombre del script\n# $1, $2, ... = argumentos posicionales\n# $# = número de argumentos\n# $@ = todos los argumentos\n\nscript.sh arg1 arg2 arg3\necho \"Script: $0\"\necho \"Arg1: $1\"\necho \"Total args: $#\"",
+      "descripcion": "Entrada y argumentos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Redirección\ncomando > archivo.txt         # Sobrescribir\ncomando >> archivo.txt        # Añadir\ncomando 2> error.log          # Solo errores\ncomando > salida.log 2>&1     # Ambos\ncomando &> todo.log           # Forma corta\ncomando 2>&1 | grep error     # Pipe stderr\n\n# Ejemplo práctico\n./script.sh > /var/log/script.log 2>&1\n\n# Aquí documentos (heredoc)\ncat << EOF\nBienvenido al script\nFecha: $(date)\nHost: $(hostname)\nEOF",
+      "descripcion": "Redirección"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Ejemplos Prácticos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "#!/bin/bash\n# Backup de directorio\n\nset -euo pipefail   # Error handling estricto\n\nORIGEN=\"/var/www\"\nDESTINO=\"/backup\"\nFECHA=$(date +%Y%m%d_%H%M%S)\n\n# Verificar que origen existe\nif [ ! -d \"$ORIGEN\" ]; then\n    echo \"Error: El directorio $ORIGEN no existe\"\n    exit 1\nfi\n\n# Crear directorio de backup si no existe\nmkdir -p \"$DESTINO\"\n\n# Comprimir\ntar -czf \"$DESTINO/backup_${FECHA}.tar.gz\" \"$ORIGEN\"\n\necho \"Backup creado: $DESTINO/backup_${FECHA}.tar.gz\"",
+      "descripcion": "Script de backup"
+    },
+    {
+      "tipo": "comando",
+      "valor": "#!/bin/bash\n# Monitorear servicio\n\nset -euo pipefail\n\nSERVICIO=${1:-nginx}\nMAX_INTENTOS=3\nINTENTOS=0\n\nwhile [ $INTENTOS -lt $MAX_INTENTOS ]; do\n    if systemctl is-active --quiet \"$SERVICIO\"; then\n        echo \"✓ $SERVICIO está corriendo\"\n        exit 0\n    fi\n    INTENTOS=$((INTENTOS + 1))\n    echo \"Intento $INTENTOS/$MAX_INTENTOS: $SERVICIO no responde\"\n    sleep 5\ndone\n\necho \"✗ $SERVICIO no está disponible después de $MAX_INTENTOS intentos\"\n# Notificar (implementar según necesidad)\nexit 1",
+      "descripcion": "Monitoreo de servicio"
+    },
+    {
+      "tipo": "comando",
+      "valor": "#!/bin/bash\n# Verificar espacio en disco\n\nUMBRAL=90\n\n# Obtener uso de disco raíz (sin %)\nUSO=$(df / | tail -1 | awk '{print $5}' | sed 's/%//')\n\necho \"Uso de disco: ${USO}%\"\n\nif [ \"$USO\" -gt \"$UMBRAL\" ]; then\n    echo \"ALERTA: Disco al ${USO}% (umbral: ${UMBRAL}%)\"\n    \n    # Encontrar directorios grandes\n    echo \"Top 5 directorios en /var:\"\n    du -Sh /var 2>/dev/null | sort -rh | head -5\n    \n    exit 1\nfi\n\necho \"Espacio en disco OK\"\nexit 0",
+      "descripcion": "Verificación de disco"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Best Practices"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# set -euo pipefail: modo estricto\nset -euo pipefail\n\n# -e: Sale si un comando falla\n# -u: Error si variable no definida\n# -o pipefail: Captura errores en pipes\n\n# Shebang correcto\n#!/bin/bash\n\n# Nombres descriptivos\nbackup_database.sh\nmonitor_nginx.sh\n\n# Comentarios útiles\n# Verificar precondiciones antes de ejecutar\n# Usar rutas absolutas cuando sea posible\n# Manejar errores explícitamente",
+      "descripcion": "Buenas prácticas"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Depuración\n#!/bin/bash\nset -x           # Modo debug (imprime cada comando)\nset +x           # Desactivar debug\n\n#bash -x script.sh   # Ejecutar en debug desde comando\n\n# Verificar sintaxis sin ejecutar\nbash -n script.sh",
+      "descripcion": "Depuración"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores Frecuentes"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. Sin quotes en variables — [ $VAR = \"hola\" ] falla si VAR está vacío\n2. Usar == en test — [] requiere =, [[ ]] permite ==\n3. Espacios en test — [ \"$VAR\" = \"valor\" ] requiere espacios\n4. No usar exit codes — Siempre verificar $? después de comandos\n5. set -e omitido — Errores silenciosos son difíciles de depurar\n6. Comillas simples vs dobles — Comillas simples no expanden variables"
+    }
+  ]
+}

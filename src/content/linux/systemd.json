@@ -1,0 +1,127 @@
+{
+  "id": "systemd",
+  "titulo": "Systemd: Gestión de Servicios y Logs",
+  "categoria": "linux",
+  "descripcion": "Domina systemctl, servicios system y journalctl",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "Systemd es el sistema de init y administrador de servicios estándar en la mayoría de distribuciones Linux modernas. Reemplazó a SysV init y ofrece un control más granular sobre servicios, dependencias y logging."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Conceptos Fundamentales"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Systemd introduce varios conceptos nuevos:\n# \n# Unit: recurso que systemd gestiona\n#   - service: demonio o servicio\n#   - socket: socket de red o FIFO\n#   - target: grupo de units\n#   - mount: punto de montaje\n#   - timer: tarea programada\n#   - path: monitoreo de archivos/directorios\n#\n# Unit File: archivo de configuración de una unit\n# State: estado del servicio (active, inactive, failed)",
+      "descripcion": "Conceptos de Systemd"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Gestión de Servicios con systemctl"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Iniciar un servicio\nsudo systemctl start nginx\n\n# Detener un servicio\nsudo systemctl stop nginx\n\n# Reiniciar un servicio\nsudo systemctl restart nginx\n\n# Recargar configuración sin detener (si soporta)\nsudo systemctl reload nginx\n\n# Recargar o reiniciar según soporte\nsudo systemctl reload-or-restart nginx\n\n# Habilitar servicio al arranque\nsudo systemctl enable nginx\n\n# Deshabilitar servicio al arranque\nsudo systemctl disable nginx\n\n# Ver estado actual\nsudo systemctl status nginx",
+      "descripcion": "Operaciones básicas de servicios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Verificar si un servicio está activo\nsystemctl is-active nginx\n# Devuelve \"active\" o \"inactive\"\n\n# Verificar si está habilitado\nsystemctl is-enabled nginx\n# Devuelve \"enabled\", \"disabled\" o \"linked\"\n\n# Reiniciar solo si el servicio está corriendo\nsystemctl try-restart nginx\n\n# Iniciar solo si no está corriendo\nsystemctl condition-units-active nginx || systemctl start nginx",
+      "descripcion": "Consultar estado de servicios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Listar todos los servicios\nsystemctl list-units --type=service\n\n# Listar servicios que fallaron\nsystemctl --failed --type=service\n\n# Listar servicios habilitados (que inician al arranque)\nsystemctl list-unit-files --type=service\n\n# Filtrar por estado\nsystemctl list-units --type=service --state=running\nsystemctl list-units --type=service --state=exited\n\n# Ver dependencies de un servicio\nsystemctl list-dependencies nginx\nsystemctl list-dependencies --reverse nginx   # Ver qué depende de este servicio",
+      "descripcion": "Listado de servicios"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Targets (Niveles de Ejecución)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Los targets reemplazan los runlevels de SysV init\n#\n# common.targets:\n#   - graphical.target    (equivale a runlevel 5 - entorno gráfico)\n#   - multi-user.target  (equivale a runlevel 3 - multiusuario texto)\n#   - rescue.target      (equivale a runlevel 1 - modo single user)\n#   - emergency.target   (shell mínimo de emergencia)\n#   - reboot.target      (reiniciar)\n#   - poweroff.target    (apagar)\n\n# Ver el target actual\nsystemctl get-default\n\n# Cambiar target por defecto\nsudo systemctl set-default multi-user.target\n\n# Cambiar target temporalmente (este arranque)\nsudo systemctl isolate multi-user.target\n\n# Ir a modo rescue\nsudo systemctl rescue\n\n# Ir a modo emergency\nsudo systemctl emergency",
+      "descripcion": "Targets de Systemd"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver servicios que habilitan un target\nsystemctl list-dependencies graphical.target\n\n# Mostrar árbol de targets\nsystemctl list-units --type=target",
+      "descripcion": "Dependencias de targets"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Logs con journalctl"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver todos los logs (paginados)\njournalctl\n\n# Ver logs del kernel\njournalctl -k\n\n# Ver logs de un servicio específico\njournalctl -u nginx\njournalctl -u nginx -u mysql           # Múltiples servicios\n\n# Ver logs desde el arranque actual\njournalctl -b\n\n# Ver logs del arranque anterior (-1), anterior (-2), etc.\njournalctl -b -1\njournalctl -b -2\n\n# Ver logs en tiempo real (equivalente a tail -f)\njournalctl -f\n\n# Limitar输出的 líneas\njournalctl -n 50                        # Últimas 50 líneas\njournalctl -n 100 --no-pager",
+      "descripcion": "Consulta básica de logs"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Filtrar por rango de tiempo\njournalctl --since \"2024-01-15 10:00:00\"\njournalctl --since \"1 hour ago\"\njournalctl --since \"today\"\njournalctl --since \"yesterday\"\njournalctl --since \"2024-01-01\" --until \"2024-01-31\"\n\n# Filtrar por prioridad\n# 0=emerg, 1=alert, 2=crit, 3=err, 4=warning, 5=notice, 6=info, 7=debug\njournalctl -p err\njournalctl -p warning -p err           # Errores y warnings\njournalctl -p 3                         # Por número\n\n# Filtrar por proceso específico\njournalctl _PID=1234\njournalctl _UID=0\njournalctl _SYSTEMD_UNIT=nginx.service",
+      "descripcion": "Filtrado de logs"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver tamaño que ocupan los logs\njournalctl --disk-usage\n\n# Limitar tamaño máximo de logs\n# En /etc/systemd/journald.conf:\n# SystemMaxUse=500M\n# SystemMaxFileSize=50M\n# RuntimeMaxUse=100M\n\n# Rotar logs inmediatamente\nsudo journalctl --rotate\n\n# Limpiar logs antiguos (mantener últimas 3 semanas)\nsudo journalctl --vacuum-time=3weeks\n\n# Limpiar logs (mantener últimos 500MB)\nsudo journalctl --vacuum-size=500M\n\n# Ver configuración actual\njournalctl -u nginx -o json             # Formato JSON\njournalctl -u nginx -o short-iso        # Timestamp ISO",
+      "descripcion": "Gestión de espacio y rotación de logs"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Crear un Servicio Personalizado"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Archivo: /etc/systemd/system/mi-script.service\n[Unit]\nDescription=Mi Script de Monitoreo\nAfter=network.target\nWants=network.target\n\n[Service]\nType=simple\nUser=miusuario\nGroup=migrupo\nWorkingDirectory=/opt/miscripts\nExecStart=/opt/miscripts/monitor.sh\nExecStop=/opt/miscripts/monitor.sh --stop\nExecReload=/bin/kill -HUP $MAINPID\nRestart=on-failure\nRestartSec=10\nStandardOutput=journal\nStandardError=journal\n\n# Environments\nEnvironment APP_ENV=production\n\n[Install]\nWantedBy=multi-user.target",
+      "descripcion": "Unit file de ejemplo"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Tipos de servicio (Type=):\n# simple:       El proceso principal es el servicio\n# exec:         Similar pero no fork\n# forking:      El proceso hace fork de un hijo\n# oneshot:      Ejecuta una vez y termina (Type=oneshot permite RemainAfterExit=yes)\n# dbus:         Espera a que adquiera un nombre D-Bus\n# notify:       Espera notificación de readiness\n\n# Recargar daemon después de crear/editar unit\nsudo systemctl daemon-reload\n\n# Habilitar y arrancar\nsudo systemctl enable --now mi-script\n\n# Ver logs del nuevo servicio\njournalctl -u mi-script -f",
+      "descripcion": "Tipos de servicios y recarga"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Timers (Tareas Programadas)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Archivo: /etc/systemd/system/backup.timer\n[Unit]\nDescription=Backup Diario\nRequires=backup.service\n\n[Timer]\nOnCalendar=daily\nPersistent=true\nUnit=backup.service\n\n[Install]\nWantedBy=timers.target\n\n# Archivo: /etc/systemd/system/backup.service\n[Unit]\nDescription=Script de Backup\n\n[Service]\nType=oneshot\nExecStart=/opt/backup.sh\n",
+      "descripcion": "Timer para backup diario"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Más ejemplos de OnCalendar\nOnCalendar=hourly          # Cada hora\nOnCalendar=daily            # Cada día a medianoche\nOnCalendar=weekly           # Cada lunes a medianoche\nOnCalendar=monthly          # Primer día del mes\nOnCalendar=*-*-01 02:00:00  # Día 1 de cada mes a las 2am\nOnCalendar=Mon-Fri *-*-*    # Lunes a viernes\nOnCalendar=*-*-* *:00:00    # Cada hora en punto\nOnCalendar=*-*-15 03:00:00 # Día 15 a las 3am\n\n# Listar timers activos\nsystemctl list-timers\nsystemctl list-timers --all",
+      "descripcion": "Expresiones de calendario"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Comandos Útiles del Sistema"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Apagar el sistema\nsudo systemctl poweroff\nsudo poweroff\n\n# Reiniciar\nsudo systemctl reboot\nsudo reboot\n\n# Pausar (suspend to RAM)\nsudo systemctl suspend\n\n# Hibernar (suspend to disk)\nsudo systemctl hibernate\n\n# Parar el sistema pero mantener energía\nsudo systemctl halt\n\n# Shutdown programado\nsudo shutdown +30 \"El servidor se reiniciará en 30 minutos\"\nsudo shutdown -r 02:00 \"Reinicio programado\"\nsudo shutdown -c \"Cancelar shutdown\"\n\n# Ver quién está conectado y broadcast\nwall \"Mantenimiento en 5 minutos\"",
+      "descripcion": "Control de energía del sistema"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Diagnóstico de Problemas"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# El servicio no inicia - Diagnóstico completo\nsudo systemctl status nginx\njournalctl -u nginx -n 50 --no-pager\nsudo systemctl log-level debug\nsudo systemctl cat nginx              # Ver unit file\nsudo systemctl edit nginx              # Editar overrides\n\n# Ver por qué falló\nsystemctl --failed\njournalctl -p err -b\n\n# Dependencias rotas\nsudo systemctl list-dependencies --all nginx\n\n# Ver estado del kernel\ndmesg | tail\njournalctl -k",
+      "descripcion": "Diagnóstico de servicios fallidos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores Frecuentes"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. Editar unit files sin recargar: siempre ejecutar 'daemon-reload'\n2. Habilitar no es iniciar: enable ≠ start\n3. Permisos en ExecStart: el servicio corre con su propio usuario\n4. Falta WantedBy: sin esto, el servicio no se habilitará\n5. Type=oneshot sin RemainAfterExit: el servicio parece inactivo\n6. Dependencias circulares: systemd no las permite y fallará"
+    }
+  ]
+}

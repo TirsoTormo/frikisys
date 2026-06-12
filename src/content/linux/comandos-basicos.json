@@ -1,0 +1,102 @@
+{
+  "id": "comandos-basicos",
+  "titulo": "20 Comandos Esenciales para el Día a Día",
+  "categoria": "linux",
+  "descripcion": "Los comandos que usarás cada día como SysAdmin de Linux",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "La línea de comandos es tu interfaz principal con el servidor. Estos 20 comandos cubren el 80% de las operaciones diarias que realizarás como SysAdmin."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Navegación y Archivos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Cambiar directorio\ncd /var/log\ncd ~              # Ir a home\ncd -              # Volver al directorio anterior\ncd ..             # Subir un nivel\n\n# Mostrar directorio actual\npwd",
+      "descripcion": "Navegación entre directorios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Listar archivos\nls                    # Lista básica\nls -la               # Lista detallada con archivos ocultos\nls -lh               # Tamaño legible (KB, MB, GB)\nls -lt               # Ordenar por fecha de modificación\nls -lS               # Ordenar por tamaño\nls -la /etc/*.conf   # Patrones glob\n\n# Exploración interactiva\ntree /var/log        # Vista de árbol\ntree -L 2 /          # Limitar profundidad",
+      "descripcion": "Listado de archivos y directorios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Buscar archivos\nfind /home -name \"*.log\"           # Por nombre\nfind / -type f -size +100M          # Archivos > 100MB\nfind / -mtime -7                    # Modificados en 7 días\nfind / -user www-data               # Por propietario\n\n# Buscar más rápido (base de datos)\nupdatedb                              # Actualizar índice\nlocate nginx.conf                     # Buscar instantáneo\n\n# Buscar contenido\ngrep -r \"error\" /var/log/\ngrep -i \"warning\" /var/log/syslog\ngrep -n \"error\" archivo.log          # Con números de línea",
+      "descripcion": "Búsqueda de archivos y contenido"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Copiar archivos\ncp archivo.txt /backup/\ncp -r /directorio/ /backup/          # Copiar directorio recursivamente\ncp -p archivo.txt /backup/            # Preservar permisos y timestamps\n\n# Mover/Renombrar\nmv archivo.txt /nuevo/\nmv nombre_viejo.txt nombre_nuevo.txt  # Renombrar\n\n# Eliminar (¡con precaución!)\nrm archivo.txt\nrm -rf /directorio/                  # Forzar eliminación recursiva\n\n# Crear\ntouch archivo.txt                    # Archivo vacío\nmkdir -p /proyecto/{src,lib,tests}   # Crear estructura",
+      "descripcion": "Operaciones con archivos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver contenido de archivos\ncat archivo.log                       # Contenido completo\nless archivo.log                       # Navegable (q para salir)\nhead -20 archivo.log                   # Primeras 20 líneas\ntail -20 archivo.log                   # Últimas 20 líneas\ntail -f /var/log/syslog               # Seguiir logs en vivo\n\n# Contar líneas\nwc -l archivo.log                     # Número de líneas\n\n# Ver archivos grandes\nzcat /var/log/auth.log.1.gz          # Comprimidos\ngzip -dc archivo.gz | grep error      # Pipes",
+      "descripcion": "Visualización de archivos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Sistema y Procesos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Información del sistema\nuname -a\nhostname\nuptime\n\n# Fecha y hora\ndate\ntimedatectl                           # Fecha completa (systemd)\n\n# Usuarios conectados\nwho\nw\nlast                                  # Historial de logins\n\n# Estadísticas del sistema\ntop                                    # Monitor en vivo (q para salir)\nhtop                                   # Versión mejorada (si está instalada)\n",
+      "descripcion": "Información del sistema"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver uso de disco\ndf -h                                 # Espacio libre\ndf -i                                 # Inodos\ndu -sh /var/log                       # Tamaño de directorio\ndu -h --max-depth=1 /                 # Resumen por nivel\n\n# Ver estructura de discos\nlsblk\nblkid                                  # UUIDs de particiones",
+      "descripcion": "Uso de disco"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver procesos\nps aux                                 # Todos los procesos\nps aux | grep nginx                    # Procesos específicos\nps -ef --forest                        # Árbol de procesos\n\n# Matar procesos\nkill PID                               # Enviar señal TERM\nkill -9 PID                            # Forzar terminación\nkillall nginx                           # Por nombre",
+      "descripcion": "Gestión de procesos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Permisos de archivos\nchmod 755 script.sh                   # rwxr-xr-x\nchmod +x script.sh                     # Agregar execute\nchmod -R 644 /var/www/                 # Recursivo\n\n# Cambiar propietario\nchown usuario:grupo archivo\nchown -R www-data:www-data /var/www/",
+      "descripcion": "Permisos de archivos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Redes\nip addr show                           # IPs interfaces\nip route show                          # Tabla de enrutamiento\nnetstat -tulpn                         # Puertos listening\nss -tulpn                              # Alternativa moderna\nping -c 4 google.com                   # Conectividad\ntraceroute google.com                  # Trazado de ruta\n\n# DNS\nnslookup dominio.com\ndig dominio.com",
+      "descripcion": "Configuración de red"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Comprimir y extraer\ntar -czvf backup.tar.gz /datos/       # Comprimir\ntar -xzvf backup.tar.gz                # Extraer\ntar -tzvf backup.tar.gz                # Ver contenido\n\n# Compactar archivo grande\ntar -czf log.tar.gz /var/log/*.log\n\n# Distribuir\ntar -czvf - datos | ssh server 'cat > backup.tar.gz'",
+      "descripcion": "Compresión de archivos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Tuberías (pipes) - encadenar comandos\ncat /var/log/auth.log | grep \"Failed\" | wc -l\n\n# Redirección\ncomando > archivo.txt                  # Sobrescribir\ncomando >> archivo.txt                 # Añadir\ncomando 2>&1                           # Redirigir errores\n\n# Variables de entorno\n$HOME, $PATH, $USER, $SHELL\nexport VARIABLE=valor\necho $PATH",
+      "descripcion": "Tuberías y redirección"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Cron - tareas programadas\ncrontab -e                             # Editar crontab\ncrontab -l                             # Ver crontab\n\n# Formato: minuto hora día mes día_semana comando\n# Ejemplos:\n0 2 * * * /backup.sh                   # Daily 2am\n*/15 * * * * /monitor.sh               # Cada 15 min\n0 0 1 * * /monthly.sh                  # Primer día del mes\n\n# Ver logs de cron\ngrep CRON /var/log/syslog",
+      "descripcion": "Tareas programadas"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores Frecuentes"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. rm -rf /* — NUNCA lo ejecutes. Es destructivo e irreversible.\n2. cd sin argumentos — puede llevarte a /home, no al directorio anterior\n3. Ignorar los permisos — siempre verifica chmod después de copiar archivos\n4. No hacer backup antes de modificar configs en /etc/\n5. Olvidar el '&' en comandos largos — se bloquea la terminal\n6. Usar Ctrl+C accidentalmente — cancela el comando actual"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Trucos del Día a Día"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Historial de comandos\nhistory                                 # Ver historial\n!!                                       # Repetir último comando\n!grep                                   # Repetir último comando con 'grep'\nCtrl+R                                  # Búsqueda interactiva\n\n# Atajos de teclado\nCtrl+C                                  # Cancelar comando\nCtrl+Z                                  # Suspender proceso\nCtrl+D                                  # Cerrar terminal/sesión\nCtrl+L                                  # Limpiar pantalla\nCtrl+A/E                                # Inicio/Fin de línea\nCtrl+U/K                                # Borrar línea izq/der\n\n# Alias útiles (agregar a ~/.bashrc)\nalias ll='ls -la'\nalias grep='grep --color=auto'\nalias ..='cd ..'",
+      "descripcion": "Productividad en terminal"
+    }
+  ]
+}

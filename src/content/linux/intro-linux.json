@@ -1,0 +1,94 @@
+{
+  "id": "intro-linux",
+  "titulo": "Introducción a Linux para SysAdmins",
+  "categoria": "linux",
+  "descripcion": "Fundamentos de Linux que todo Administrador de Sistemas necesita conocer",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "Linux es el sistema operativo dominante en servidores de producción. Su filosofía de diseño Unix — simplicidad, modularidad y transparencia — lo convierte en la plataforma ideal para entornos donde la estabilidad, seguridad y control granular son prioritarios.\n\nComo SysAdmin, trabajarás principalmente desde la línea de comandos. Dominar Linux no es opcional: es tu herramienta principal de trabajo diario."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Arquitectura del Sistema"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Linux se organiza en capas concéntricas de abstracción:"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Verificar el kernel actual\nuname -r\n\n# Mostrar información completa del sistema\nuname -a\n\n# Ver arquitectura (x86_64, aarch64, etc.)\nuname -m",
+      "descripcion": "Información del kernel y arquitectura"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Estructura de Directorios (FHS)"
+    },
+    {
+      "tipo": "texto",
+      "valor": "El Filesystem Hierarchy Standard (FHS) define la organización estándar:"
+    },
+    {
+      "tipo": "comando",
+      "valor": "/bin          # Binarios esenciales del sistema\n/sbin         # Binarios de administración\n/etc          # Archivos de configuración\n/var          # Datos variables (logs, bases de datos, colas)\n/home         # Directorios personales de usuarios\n/root         # Directorio home del administrador\n/tmp          # Archivos temporales\n/usr          # Aplicaciones y librerías de solo lectura\n/var/log      # Archivos de logs del sistema\n/var/www      # Datos web (típico en servidores)\n/srv          # Datos de servicios (FTP, HTTP, etc.)\n/proc         # Sistema de archivos virtual (información del kernel)\n/sys          # Sistema de archivos virtual (dispositivos)\n/run          # Archivos runtime (PID files, sockets)",
+      "descripcion": "Estructura de directorios según FHS"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Distribuciones Principales"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Como SysAdmin, trabajarás principalmente con distribuciones de clase empresarial:"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Distribuciones basadas en RPM (Red Hat Package Manager)\n# Ideal para: CentOS, Rocky Linux, AlmaLinux, Fedora\n\n# Distribuciones basadas en DEB (Debian Package Manager)\n# Ideal para: Debian, Ubuntu Server, Linux Mint Server\n\n# Identificar tu distribución\ncat /etc/os-release\n\n# En sistemas RHEL/CentOS\ncat /etc/redhat-release",
+      "descripcion": "Identificar la distribución Linux"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Gestión de Paquetes"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Cada distribución tiene su propio sistema de paquetes:"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Debian/Ubuntu (apt)\napt update && apt upgrade\napt install nginx\napt remove --purge nginx\ndpkg -l | grep nginx          # Listar paquetes instalados\n\n# RHEL/CentOS/Fedora (dnf/yum)\ndnf update\ndnf install nginx\ndnf remove nginx\nrpm -qa | grep nginx          # Listar paquetes instalados\n\n# SUSE (zypper)\nzypper update\nzypper install nginx\nzypper rm nginx",
+      "descripcion": "Gestión de paquetes según distribución"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Superusuario y Permisos"
+    },
+    {
+      "tipo": "texto",
+      "valor": "El usuario root tiene acceso total al sistema. Por seguridad, se recomienda usar sudo:"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ejecutar como root temporalmente\nsudo su -\n\n# Ejecutar un solo comando como root\nsudo systemctl restart nginx\n\n# Verificar tu usuario actual\nwhoami\n\n# Ver información extendida del usuario actual\nid\n\n# Cambiar a otro usuario\nsu - nombre_usuario",
+      "descripcion": "Cambio de privilegios en Linux"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Documentación Esencial"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Manual de cualquier comando\nman ls\nman systemctl\n\n# Buscar en manuales\nman -k \"process management\"\n\n# help integrado (para builtins de bash)\nhelp cd\nls --help\n\n# Documentación del sistema\n/etc/passwd      # Usuarios del sistema\n/etc/group       # Grupos del sistema\n/etc/shadow      # Contraseñas encriptadas (solo root)\n/proc/cpuinfo    # Información del CPU\n/proc/meminfo    # Información de memoria",
+      "descripcion": "Recursos de documentación"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Primeros Pasos Recomendados"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. Practica navegación: cd, ls, pwd hasta que sea automático\n2. Aprende edición en terminal: vim o nano\n3. Domina al menos un gestor de paquetes (apt o dnf)\n4. Configura sudo correctamente en /etc/sudoers\n5. Explora /var/log para entender los logs del sistema\n6. Practica con tmux o screen para sesiones persistentes"
+    }
+  ]
+}

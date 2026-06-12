@@ -1,0 +1,122 @@
+{
+  "id": "permisos",
+  "titulo": "Permisos en Linux: chmod, chown y Permisos Especiales",
+  "categoria": "linux",
+  "descripcion": "Domina el sistema de permisos de archivos en Linux",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "Linux implementa un modelo de permisos basado en el concepto Unix: todo es un archivo con un propietario, un grupo, y permisos de acceso. Entender este modelo es crítico para la seguridad del sistema."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Cómo Funcionan los Permisos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver permisos de un archivo\nls -l /etc/passwd\n# -rw-r--r-- 1 root root 4096 Jun 12 10:00 /etc/passwd\n# └┬┘└┬┘└┬┘\n#  │ │  └── Otros (Others)\n#  │ └──── Grupo (Group)\n#  └────── Propietario (Owner)\n\n# Significado de cada posición:\n# Primer carácter: tipo de archivo\n#   - = archivo regular\n#   d = directorio\n#   l = enlace simbólico\n#   c = dispositivo de caracteres\n#   b = dispositivo de bloques\n\n# Tres tripletas de permisos:\n# Propietario | Grupo | Otros\n# rwx        | r-x   | r--\n# 421        | 4-1   | 4--\n\n# Significado de cada permiso:\n# r (read)   = 4 - Leer\n# w (write)  = 2 - Escribir\n# x (execute)= 1 - Ejecutar",
+      "descripcion": "Estructura de permisos en Linux"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "chmod - Cambiar Permisos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Método numérico (recomendado)\nchmod 755 archivo        # rwxr-xr-x (propietario completo, resto leer/ejecutar)\nchmod 644 archivo        # rw-r--r-- (propietario lectura/escritura, resto solo leer)\nchmod 600 archivo        # rw------- (solo propietario)\nchmod 700 directorio     # rwx------ (solo propietario acceso completo)\nchmod 777 archivo        # rwxrwxrwx (TODOS acceso total - EVITAR)\n\n# Tabla de referencia rápida:\n# 0 = --- = ningún permiso\n# 1 = --x = ejecutar\n# 2 = -w- = escribir\n# 3 = -wx = escribir + ejecutar\n# 4 = r-- = leer\n# 5 = r-x = leer + ejecutar\n# 6 = rw- = leer + escribir\n# 7 = rwx = todos los permisos",
+      "descripcion": "Método numérico de chmod"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Método simbólico (más legible)\nchmod u+x script.sh      # Agregar execute al propietario\nchmod g-w archivo        # Quitar write al grupo\nchmod o+r archivo        # Agregar read a otros\nchmod a+x script.sh      # Agregar execute a todos (all)\n\n# Combinaciones\nchmod u+rx archivo       # Propietario: leer + ejecutar\nchmod go=rw archivo      # Grupo y otros: solo leer y escribir\nchmod u+rw,g+r,o-r archivo\n\n# Quitar todos los permisos de ejecución\na-x archivo\n\n# Copiar permisos de un archivo a otro\nchmod --reference=archivo1 archivo2",
+      "descripcion": "Método simbólico de chmod"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Aplicar recursivamente a directorios\nchmod -R 755 /var/www/miweb/\n\n# Solo directorios (mantener permisos de archivos)\nfind /var/www -type d -exec chmod 755 {} \\;\n\n# Solo archivos\nfind /var/www -type f -exec chmod 644 {} \\;\n\n# Aplicar a archivos ejecutables específicos\nfind /usr/local/bin -type f -perm /u+x -exec chmod 755 {} \\;\n\n# Verbose (mostrar cambios)\nchmod -v 755 archivo\n\n# Solo si los permisos cambian (quiet)\nchmod --changes archivo",
+      "descripcion": "Permisos recursivos y especiales"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "chown - Cambiar Propietario"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Cambiar propietario\nchown usuario archivo\n\n# Cambiar propietario y grupo\nchown usuario:grupo archivo\n\n# Cambiar solo el grupo\nchown :grupo archivo\nchgrp grupo archivo       # Alternativa\n\n# Cambiar recursivamente\nchown -R usuario:grupo /var/www/miweb/\n\n# Cambiar el grupo sin afectar al propietario\nchgrp -R www-data /var/www/\n\n# Copiar propietario de otro archivo\nchown --reference=archivo1 archivo2",
+      "descripcion": "Cambio de propietario y grupo"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Cambiar UID y GID de un usuario (requiere cuidado)\nfind / -uid 1000 -exec chown -h nuevo_usuario {} \\\nfind / -gid 1000 -exec chgrp -h nuevo_grupo {} \\\n\n# Después de cambiar UID, actualizar permisos de archivos\n# El anterior propietario queda huérfano si no se reasigna",
+      "descripcion": "Reasignación masiva de propietarios"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Permisos Especiales"
+    },
+    {
+      "tipo": "texto",
+      "valor": "Además de rwx básicos, existen tres permisos especiales que modifican el comportamiento del sistema:"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# SUID (Set User ID) - 4000 o s en posición de usuario\n# Cuando se ejecuta, el proceso corre con el UID del propietario del archivo\n\nchmod 4755 /usr/bin/passwd     # -rwsr-xr-x (passwd tiene SUID)\nchmod u+s archivo\n\n# Ejemplo: passwd necesita modificar /etc/shadow (solo root puede)\n# Con SUID, cualquier usuario ejecuta passwd como root\n\n# SGID (Set Group ID) - 2000 o s en posición de grupo\n# El proceso corre con el GID del grupo del archivo\n\nchmod 2755 /directorio_compartido    # Directorio con SGID\nchmod g+s archivo\n\n# Archivos creados heredan el grupo del directorio\n# Útil para directorios compartidos entre grupos",
+      "descripcion": "SUID y SGID"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Sticky Bit - 1000 o t en posición de otros\n# Solo el propietario puede eliminar o renombrar archivos\n\nchmod 1777 /tmp            # /tmp tiene sticky bit\nchmod +t directorio\n\n# Verificar sticky bit\nls -ld /tmp\n# drwxrwxrwt 10 root root 4096 Jun 12 /tmp\n#                                      ↑\n#                                      El 't' indica sticky bit\n\n# Sin sticky bit, cualquier usuario podría borrar archivos de otros\n# en /tmp. Con sticky bit, solo el dueño del archivo puede eliminarlo",
+      "descripcion": "Sticky Bit"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Representación numérica completa\n# Formato: SUID + SGID + Sticky + permisos\n\n# 4755 = SUID + rwxr-xr-x\n# 2755 = SGID + rwxr-xr-x\n# 1755 = Sticky + rwxr-xr-x\n# 6755 = SUID + SGID + rwxr-xr-x\n\n# Tabla de permisos especiales:\n# Sticky Bit:   1000  (t en otros)\n# SGID:         2000  (s en grupo)\n# SUID:         4000  (s en usuario)\n\n# Ejemplo práctico - directorio compartido de proyecto\nmkdir /proyecto\nchgrp developers /proyecto\nchmod 2775 /proyecto    # SGID: archivos heredan grupo 'developers'\nchmod +t /proyecto      # Sticky: solo dueño puede eliminar\n\n# Verificar\nls -ld /proyecto\n# drwxrwsr-x 2 root developers 4096 Jun 12 /proyecto",
+      "descripcion": "Cálculo de permisos especiales"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Permisos en Directorios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# En directorios, los permisos tienen significado especial:\n\n# r (read): Permite listar archivos del directorio\n# w (write): Permite crear, eliminar, renombrar archivos\n# x (execute): Permite acceder al directorio (entrar, usar como ruta)\n\n# Acceso a archivo requiere:\n# 1. Permisos en el directorio que lo contiene\n# 2. Permisos en el archivo mismo\n\n# Ejemplo: acceder a /a/b/c.txt necesita:\n# x en /\n# x en /a\n# x en /a/b\n# r en /a/b/c.txt",
+      "descripcion": "Permisos de directorios"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Permitir acceso a un archivo sin listar directorio\nchmod 710 /directorio_secreto\n# rwx---x---\n# El propietario tiene acceso completo\n# Otros pueden acceder a archivos específicos si conocen el nombre\n\n# Directorio solo lectura (para todos)\nchmod 555 /var/datos_publicos\n# r-xr-xr-x\n# Todos pueden listar y acceder, nadie puede crear archivos",
+      "descripcion": "Casos especiales de directorios"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Listas de Control de Acceso (ACL)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Las ACL permiten permisos más granulares que el modelo Unix básico\n\n# Ver ACL de un archivo\ngetfacl /var/www/miweb\n\n# Establecer ACL\nsetfacl -m u:www-data:rx /var/www/miweb/config.php\nsetfacl -m g:developers:rw /var/www/miweb/\nsetfacl -m o::--- /var/www/miweb/secreto.txt\n\n# ACL recursiva\nsetfacl -R -m u:www-data:rx /var/www/miweb/\n\n# Eliminar ACL\nsetfacl -x u:www-data /var/www/miweb/config.php\nsetfacl -b /var/www/miweb/config.php    # Eliminar todas las ACL",
+      "descripcion": "ACL - Permisos extendidos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Permisos por defecto para nuevos archivos\n# Se establecen en el directorio padre\n\nsetfacl -d -m u:www-data:rx /var/www/miweb/\nsetfacl -d -m g:developers:rw /var/www/miweb/\n\n# -d = default (heredado por archivos nuevos)\n# Verificar defaults\ngetfacl /var/www/miweb/\n# default:user:www-data:r-x\n# default:group:developers:rw-",
+      "descripcion": "ACL por defecto"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Diagnóstico de Problemas"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Archivos sin propietario o grupo\nfind / -nouser 2>/dev/null\nfind / -nogroup 2>/dev/null\n\n# Permisos peligrosos\nfind / -perm -4777 2>/dev/null       # Archivos con SUID\nfind / -perm -6777 2>/dev/null       # Archivos con SUID+SGID\n\n# Archivosworld-writable (cualquiera puede escribir)\nfind / -perm -0002 -type f 2>/dev/null\nfind / -perm -0002 -type d 2>/dev/null\n\n# Verificar permisos críticos\nls -la /etc/shadow\nls -la /etc/passwd\nls -la /usr/bin/sudo\nls -la /tmp",
+      "descripcion": "Encontrar y corregir problemas de permisos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores Frecuentes"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. chmod 777 — Permite que cualquiera modifique, borre o ejecute\n2. Olvidar permisos de ejecución en scripts — \"Permiso denegado\"\n3. Perder acceso al editar /etc/sudoers — Usa visudo siempre\n4. SUID en shellscripts — Es peligroso y Linux lo ignora\n5. Cambiar permisos de /etc/passwd a 777 — Rompe la seguridad\n6. No verificar recursividad — chmod -R puede afectar más de lo esperado"
+    }
+  ]
+}

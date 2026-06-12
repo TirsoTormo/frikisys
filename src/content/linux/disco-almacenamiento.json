@@ -1,0 +1,132 @@
+{
+  "id": "disco-almacenamiento",
+  "titulo": "Gestión de Disco y Almacenamiento en Linux",
+  "categoria": "linux",
+  "descripcion": "Comandos para monitorear, gestionar y montar dispositivos de almacenamiento",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "La gestión de almacenamiento es crítica para cualquier SysAdmin. Linux presenta los discos como archivos de dispositivo en /dev/ y ofrece herramientas potentes para particionar, formatear, montar y monitorear el uso del almacenamiento."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Identificar Dispositivos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver todos los dispositivos de bloque\nlsblk\n\n# Ver con más detalles\nlsblk -fm\n\n# Mostrar UUIDs y tipos de filesystem\nblkid\n\n# Ver información de dispositivos SCSI/SATA\nlsscsi\n\n# Particiones existentes\nfdisk -l\nfdisk -l /dev/sda\n\n# Ver tabla de particiones (sin permisos)\nsfdisk -l /dev/sda\n\n# Particionado GPT (UEFI)\ngdisk -l /dev/sda",
+      "descripcion": "Identificación de discos y particiones"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "df - Espacio Libre"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver espacio en disco (filesystem)\ndf\ndf -h                        # Lectura humana (KB, MB, GB)\ndf -H                        # Potencias de 1000\ndf -T                        # Incluir tipo de filesystem\ndf -i                        # Ver uso de inodos\n\n# Ejemplo de salida:\n# S.ficheros     Tamaño  Usados  Disp   Uso% Montado en\n# /dev/sda1       100G    45G    55G   45%   /\n# tmpfs           2.0G    1.0M   2.0G    1%   /dev/shm\n\n# Solo sistemas de archivos locales\ndf -h -x tmpfs -x devtmpfs -x squashfs\n\n# Ver un directorio específico\ndf -h /home\n\n# Ver en bytes\ndf --block-size=1M",
+      "descripcion": "Uso de df"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Script para alertar sobre disco lleno\nTHRESHOLD=90\nUSAGE=$(df / | tail -1 | awk '{print $5}' | sed 's/%//')\nif [ $USAGE -gt $THRESHOLD ]; then\n    echo \"Alerta: Disco al ${USAGE}%\"\n    # Enviar notificación\nfi",
+      "descripcion": "Alertar sobre espacio bajo"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "du - Uso de Disco por Archivo/Directorio"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver tamaño de directorio\ndu /var/log\ndu -h /var/log               # Lectura humana\n\n# Tamaño total del directorio\ndu -sh /var/log\n\n# Top 10 directorios más grandes (recursivo)\ndu -h / | sort -rh | head -10\n\n# Limitar profundidad\ndu -h --max-depth=2 /var\n\n# Solo archivos (no directorios)\ndu -ha /var/log | sort -rh | head -20\n\n# Excluir tipo de archivo\ndu -h --exclude='*.log' /var\n\n# Ver tamaño de archivo específico\ndu -h archivo_grande.tar.gz",
+      "descripcion": "Uso de du"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Encontrar archivos grandes rápidamente\nfind / -type f -size +100M -exec ls -lh {} \\;\n\n# Los 20 archivos más grandes\nfind / -type f -exec du -Sh {} + | sort -rh | head -20\n\n# Por directorio (alternativa rápida)\ndu -sh /* 2>/dev/null | sort -rh | head -10\n\n# Logs que consumen espacio\ndu -sh /var/log/*\ndu -h /var/log 2>/dev/null | sort -rh | tail -10",
+      "descripcion": "Encontrar archivos grandes"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Particionado de Discos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# fdisk - Particionado MBR (discos < 2TB)\nsudo fdisk /dev/sdb\n\n# Comandos interactivos en fdisk:\n# n = nueva partición\n# p = primaria\n# e = extendida\n# w = guardar y salir\n# q = salir sin guardar\n# d = eliminar partición\n# t = cambiar tipo de filesystem\n# l = listar tipos\n\n# Ejemplo crear partición primaria:\n# n, p, 1, enter, enter, w",
+      "descripcion": "Particionado con fdisk"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# parted - Particionado avanzado (MBR y GPT)\nsudo parted /dev/sdb\n\n# Comandos interactivos:\n# mklabel gpt          # Crear tabla GPT\n# mkpart primary ext4 0% 100%    # Partición que ocupa todo\n# mkpart primary xfs   0GB 500GB # Tamaño específico\n# print                # Ver particiones\n# rm 1                 # Eliminar partición 1\n# quit                 # Salir\n\n# Scripting parted\nsudo parted -s /dev/sdb mklabel gpt\nsudo parted -s /dev/sdb mkpart primary ext4 0% 100%",
+      "descripcion": "Particionado con parted"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# sfdisk - Particionado desde script\nsudo sfdisk /dev/sdb < particiones.txt\n\n# Formato de entrada:\n# label: gpt\n# device: /dev/sdb\n# unit: sectors\n# /dev/sdb1 : start=2048, size=100M, type=8300\n# /dev/sdb2 : start=206848, size=1G, type=8300",
+      "descripcion": "Particionado con sfdisk"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Filesystems y Formateo"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear filesystem (formatear)\n# ADVERTENCIA: destruye todos los datos\n\n# ext4 (recomendado para Linux)\nsudo mkfs.ext4 /dev/sdb1\nsudo mkfs.ext4 -L \"datos\" /dev/sdb1   # Con etiqueta\n\n# xfs (buen rendimiento, no permite reducir)\nsudo mkfs.xfs /dev/sdb1\n\n# btrfs (copy-on-write, snapshots)\nsudo mkfs.btrfs /dev/sdb1\n\n# vfat (USB, compatibilidad Windows)\nsudo mkfs.vfat /dev/sdb1\n\n# ntfs (requiere ntfs-3g)\nsudo mkfs.ntfs /dev/sdb1",
+      "descripcion": "Crear filesystems"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Opciones de mkfs.ext4\nsudo mkfs.ext4 -E stride=2,stripe-width=4 /dev/sdb1  # RAID\nsudo mkfs.ext4 -b 4096 /dev/sdb1                    # Tamaño bloque\nsudo mkfs.ext4 -m 0 /dev/sdb1                       # Sin espacio reservado\n\n# tune2fs - ajustar filesystem ext\nsudo tune2fs -L \"nueva-etiqueta\" /dev/sdb1\nsudo tune2fs -m 0 /dev/sdb1            # 0% espacio reservado\nsudo tune2fs -c 0 /dev/sdb1            # Sin límite de montajes\nsudo tune2fs -i 30d /dev/sdb1          # Verificar cada 30 días\n\n# Verificar filesystem\nsudo fsck /dev/sdb1                    # Verificación\nsudo fsck -f /dev/sdb1                # Forzar verificación",
+      "descripcion": "Opciones avanzadas de filesystem"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Montaje de Dispositivos"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Montar dispositivo manualmente\nsudo mount /dev/sdb1 /mnt/datos\n\n# Montar con opciones comunes\nsudo mount -o ro /dev/sdb1 /mnt/solo-lectura    # Solo lectura\nsudo mount -o remount,rw /mnt/datos              # Cambiar a rw\nsudo mount -o noexec /mnt/datos                  # No ejecutar binaries\n\n# Montar con filesystem específico\nsudo mount -t ext4 /dev/sdb1 /mnt/datos\nsudo mount -t nfs4 server:/export /mnt/nfs\nsudo mount -t cifs //server/share /mnt/smb -o user=user,pass=pass\n\n# Remontar (después de editar fstab)\nsudo mount -a\n\n# Desmontar\nsudo umount /mnt/datos\nsudo umount -l /mnt/datos         # Lazy unmount (si está ocupado)\nsudo umount -f /mnt/datos         # Force unmount",
+      "descripcion": "Montaje y desmontaje"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver mounted filesystems\nmount\nmount | grep /dev/sdb1\n\n# Montaje automático (fstab)\n# Editar /etc/fstab\n# Formato: <device> <mount point> <type> <options> <dump> <pass>\n\n# Ejemplo:\n# UUID=abc123...  /datos  ext4  defaults  0  2\n\n# Obtener UUID\nsudo blkid /dev/sdb1\n\n# Probar montaje (sin reiniciar)\nsudo mount -a\n\n# Montaje en tiempo de ejecución (tmpfs)\nmount -t tmpfs -o size=1G tmpfs /ramdisk",
+      "descripcion": "fstab y montaje automático"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# RAID por software con mdadm\nsudo mdadm --create /dev/md0 --level=5 --raid-devices=3 /dev/sdb1 /dev/sdc1 /dev/sdd1\n\n# Ver estado RAID\ncat /proc/mdstat\nsudo mdadm --detail /dev/md0\n\n# LVM (Logical Volume Manager)\npvcreate /dev/sdb1\nvgcreate vg_datos /dev/sdb1\nlvcreate -L 100G -n lv_datos vg_datos\nmkfs.ext4 /dev/vg_datos/lv_datos\nmount /dev/vg_datos/lv_datos /mnt/datos",
+      "descripcion": "RAID y LVM"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "SWAP"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver swap actual\nswapon -s\ncat /proc/swaps\nfree -h\n\n# Crear archivo de swap\nsudo fallocate -l 2G /swapfile\nsudo chmod 600 /swapfile\nsudo mkswap /swapfile\nsudo swapon /swapfile\n\n# Agregar a fstab para persistencia:\n# /swapfile none swap sw 0 0\n\n# Configuración de swappiness (0-100, más bajo = menos swap)\ncat /proc/sys/vm/swappiness\nsudo sysctl vm.swappiness=10\n\n# Hacer permanente (agregar a /etc/sysctl.conf):\n# vm.swappiness=10\n\n# Eliminar swap\nsudo swapoff /swapfile\nsudo rm /swapfile",
+      "descripcion": "Gestión de swap"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Limpieza y Mantenimiento"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Limpiar espacio en disco\n\n# Paquetes descargados (Debian/Ubuntu)\nsudo apt clean\n\n# Paquetes obsoletos\nsudo apt autoremove\n\n# Logs antiguos\njournalctl --vacuum-size=100M\nfind /var/log -name \"*.gz\" -mtime +30 -delete\n\n# Archivos temporales del sistema\nsudo find /tmp -type f -atime +10 -delete 2>/dev/null\n\n# Docker (si está instalado)\ndocker system prune -a\n\n# Logs de aplicaciones\ntruncate -s 0 /var/log/nginx/access.log",
+      "descripcion": "Liberar espacio en disco"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear enlace simbólico\nln -s /target/path /link\n\n# Enlace duro (mismo archivo, distintos nombres)\nln /original /hardlink\n\n# Ver enlaces de un archivo\nls -li /archivo\n\n# Verificar integridad de disco (smartmontools)\nsudo smartctl -a /dev/sda\nsudo smartctl -H /dev/sda         # Health check\nsudo smartctl -t short /dev/sda   # Test corto\n\n# Ver información SMART\nsudo smartctl -a /dev/sda | grep -E \"Model|Serial|Capacity|SMART\"",
+      "descripcion": "Enlaces y diagnóstico"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores Frecuentes"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. Disco lleno en / — El filesystem raíz se llena y bloquea el sistema\n2. No espacio reservado — ext4 reserva 5% para root; sin él, problemas\n3. Montaje incorrecto en fstab — El sistema no inicia correctamente\n4. Formatear disco wrong — Perder datos permanentemente\n5. Partición sobrepasa disco físico — Problemas en RAID/LVM\n6. Inodos agotados — Muchos archivos pequeños pueden agotar los inodos (df -i)"
+    }
+  ]
+}

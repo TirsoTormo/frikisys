@@ -1,0 +1,153 @@
+{
+  "id": "ssh",
+  "titulo": "SSH: Configuración, Claves y Túneles",
+  "categoria": "linux",
+  "descripcion": "Domina SSH para administración remota segura",
+  "contenido": [
+    {
+      "tipo": "texto",
+      "valor": "SSH (Secure Shell) es el protocolo estándar para administración remota de servidores Linux. Dominar SSH incluye autenticación por claves, túneles seguros y configuraciones optimizadas."
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Conexión Básica"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Conexión básica\nssh usuario@servidor\nssh usuario@192.168.1.100\n\n# Puerto diferente al default (22)\nssh -p 2222 usuario@servidor\n\n# Especificar clave SSH\nssh -i ~/.ssh/mi_clave.pem usuario@servidor\n\n# Verbose (debug)\nssh -v usuario@servidor\nssh -vv usuario@servidor    # Más detalle\nssh -vvv usuario@servidor   # Máximo detalle",
+      "descripcion": "Conexión SSH básica"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ejecutar comando remoto\nssh usuario@servidor \"ls -la /var/log\"\nssh usuario@servidor \"systemctl restart nginx\"\n\n# Múltiples comandos\nssh usuario@servidor \"df -h && free -m && uptime\"\n\n# Pipe local a remoto\ncat archivo_local.txt | ssh usuario@servidor \"cat > archivo_remoto.txt\"\n\n# Descargar archivo\nscp usuario@servidor:/ruta/remota/archivo.txt ./local/\n\n# Subir archivo\nscp ./local/archivo.txt usuario@servidor:/ruta/remota/\n\n# Directorio recursivo\nscp -r ./directorio/ usuario@servidor:/ruta/remota/",
+      "descripcion": "Comandos remotos y transferencia"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Autenticación con Claves SSH"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Generar par de claves\nssh-keygen -t ed25519 -C \"mi_email@ejemplo.com\"\n\n# Opciones:\n# -t rsa       = RSA 4096 bits (compatible)\n# -t ed25519   = Ed25519 (recomendado, más seguro y rápido)\n# -t ecdsa     = ECDSA\n# -C           = Comentario (para identificar)\n\n# Ubicaciones:\n# Clave privada: ~/.ssh/id_ed25519\n# Clave pública: ~/.ssh/id_ed25519.pub\n\n# Proteger clave con passphrase (recomendado)\n# Passphrase: contraseña para usar la clave privada\n# ssh-agent: maneja passphrase en memoria",
+      "descripcion": "Generación de claves"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Copiar clave pública al servidor\nssh-copy-id usuario@servidor\n\n# Versión con puerto personalizado\nssh-copy-id -p 2222 usuario@servidor\n\n# Versión manual (si ssh-copy-id no está disponible)\ncat ~/.ssh/id_ed25519.pub | ssh usuario@servidor \"mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys\"",
+      "descripcion": "Copiar clave pública"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver claves autorizadas en servidor remoto\ncat ~/.ssh/authorized_keys\n\n# Permisos correctos (importante)\nchmod 700 ~/.ssh\nchmod 600 ~/.ssh/authorized_keys\nchmod 600 ~/.ssh/id_ed25519      # Clave privada\nchmod 644 ~/.ssh/id_ed25519.pub  # Clave pública",
+      "descripcion": "Gestión de claves en servidor"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# ssh-agent - manejar passphrase en memoria\n\n# Iniciar agent\neval \"$(ssh-agent -s)\"\n\n# Agregar clave\nssh-add ~/.ssh/id_ed25519\nssh-add ~/.ssh/clave_personal.pem\n\n# Listar claves cargadas\nssh-add -l\n\n# Agregar todas las claves\nssh-add ~/.ssh/*\n\n# Eliminar todas las claves\nssh-add -D\n\n# Mac: usar Keychain para persistencia\n# Agregar a ~/.bash_profile:\n# eval \"$(ssh-agent -s)\"\n# ssh-add -A",
+      "descripcion": "ssh-agent"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Configuración con ssh config"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# ~/.ssh/config - configuración por host\n# Host: nombre del servidor\n\nHost servidor-prod\n    HostName 192.168.1.100\n    User admin\n    Port 22\n    IdentityFile ~/.ssh/id_ed25519\n    ForwardAgent yes\n\nHost servidor-web\n    HostName web.example.com\n    User www\n    Port 2222\n    IdentityFile ~/.ssh/production.pem\n    ServerAliveInterval 60\n    ServerAliveCountMax 3\n\nHost github.com\n    HostName github.com\n    User git\n    IdentityFile ~/.ssh/github_ed25519",
+      "descripcion": "Archivo ssh config"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Opciones útiles de ssh config:\n\nHost mi-servidor\n    # Conexión\n    HostName servidor.com\n    User admin\n    Port 2222\n    IdentityFile ~/.ssh/clave.pem\n    \n    # Keepalive (evitar desconexiones por inactividad)\n    ServerAliveInterval 60\n    ServerAliveCountMax 3\n    \n    # Reutilizar conexión (más rápido)\n    ControlMaster auto\n    ControlPath ~/.ssh/sockets/%r@%h-%p\n    ControlPersist 600\n    \n    # Proxy jump (a través de bastion)\n    ProxyJump bastion@servidor-bastion.com\n    \n    # Forwarding\n    ForwardAgent yes\n    \n    # Timeouts\n    ConnectTimeout 10\n    ConnectionAttempts 3",
+      "descripcion": "Opciones de ssh config"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Crear directorio para sockets\neval \"$(ssh-agent -s)\"\nmkdir -p ~/.ssh/sockets\n\n# Ahora las conexiones reutilizan el socket\n# Primera conexión: authentica normalmente\nssh servidor-prod\n\n# Conexiones siguientes: instantáneas (mismo socket)\nssh servidor-prod",
+      "descripcion": "ControlMaster para conexiones rápidas"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Túneles SSH"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Local port forwarding\n# Acceder a servicio en servidor como si fuera local\n\n# Ejemplo: acceder a MySQL remoto\nssh -L 3307:localhost:3306 usuario@servidor\n# Ahora localhost:3307 -> servidor:3306\nmysql -h 127.0.0.1 -P 3307\n\n# Formato:\n# ssh -L [puerto_local]:[host_remoto]:[puerto_remoto] usuario@servidor\n# host_remoto se resuelve en el servidor",
+      "descripcion": "Local port forwarding"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Remote port forwarding\n# Exponer servicio local hacia servidor\n\n# Ejemplo: permitir acceso a app local desde servidor\nssh -R 8080:localhost:3000 usuario@servidor\n# Ahora desde servidor:8080 -> localhost:3000\n\n# Para bind en todas las interfaces (0.0.0.0)\nssh -R 0.0.0.0:8080:localhost:3000 usuario@servidor\n\n# Requiere GatewayPorts yes en /etc/ssh/sshd_config del servidor",
+      "descripcion": "Remote port forwarding"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# SOCKS Proxy (navegación por túnel)\nssh -D 1080 usuario@servidor\n\n# Configurar navegador para usar:\n# SOCKS Proxy: localhost:1080\n\n# En background (-f -N)\nssh -f -N -D 1080 usuario@servidor\n\n# Con configuración persistente\nssh -f -N -D 1080 -C usuario@servidor\n# -f = background\n# -N = no ejecutar comando remoto\n# -C = compresión",
+      "descripcion": "SOCKS Proxy"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# ProxyJump / Bastion Host\n# Conectar a red interna a través de servidor de salto\n\nssh -J bastion@servidor-bastion.com servidor-interno\n\n# Múltiples saltos\nssh -J user1@jump1,user2@jump2 destino\n\n# Con ssh config:\nHost servidor-interno\n    HostName 10.0.0.50\n    ProxyJump bastion@servidor-bastion.com",
+      "descripcion": "ProxyJump"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Configuración del Servidor (sshd)"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# /etc/ssh/sshd_config - configuración del servidor SSH\n\n# Puerto (cambiar del default 22)\nPort 2222\n\n# Permitir solo ciertos usuarios\nAllowUsers admin deploy@192.168.1.0/24\n\n# Denegar root login (recomendado)\nPermitRootLogin no\n\n# Autenticación por contraseña (desactivar)\nPasswordAuthentication no\n\n# Claves públicas únicamente\nPubkeyAuthentication yes\n\n# Timeout de conexión inactiva\nClientAliveInterval 300\nClientAliveCountMax 2\n\n# Max intentos de autenticación\nMaxAuthTries 3\n\n# Permitir empty passwords\nPermitEmptyPasswords no",
+      "descripcion": "Configuración sshd"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Reiniciar sshd después de cambios\nsudo systemctl restart sshd\n\n# Verificar configuración antes de reiniciar\nsudo sshd -t\nsudo sshd -t -f /etc/ssh/sshd_config\n\n# Importante: mantener conexión activa\n# Si te bloqueas, abre nueva conexión primero",
+      "descripcion": "Reiniciar y verificar sshd"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Ver conexiones activas en servidor\nwho\nw\n\n# Ver intentos de login\nlast\nlast | grep ssh\nlastb                            # Intentos fallidos\n\n# Logs\nsudo tail -f /var/log/auth.log\nsudo journalctl -u sshd -f",
+      "descripcion": "Monitoreo"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "scp y rsync"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# scp - copia segura\n\n# Subir\nscp archivo.txt usuario@servidor:/ruta/\nscp -P 2222 archivo.txt usuario@servidor:/ruta/\n\n# Descargar\nscp usuario@servidor:/ruta/archivo.txt ./local/\n\n# Directorio completo\nscp -r directorio/ usuario@servidor:/ruta/\n\n# Preservar permisos\nscp -p archivo.txt usuario@servidor:/ruta/\n\n# Compresión\nscp -C archivo.txt usuario@servidor:/ruta/",
+      "descripcion": "scp"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# rsync - sincronización eficiente\n# Solo copia lo que cambió\n\n# Sincronizar directorio local a remoto\nrsync -avz directorio/ usuario@servidor:/ruta/\n\n# Opciones:\n# -a = modo archivo (preserva permisos, tiempos, etc.)\n# -v = verbose\n# -z = compresión\n# -P = mostrar progreso y permitir continuar\n# --delete = eliminar archivos en destino que no existen en origen\n# --exclude = excluir patrones\n# --dry-run = simular sin hacer cambios\n\nrsync -avzP --delete \\\n    --exclude '*.log' \\\n    --exclude 'node_modules/' \\\n    ./directorio/ usuario@servidor:/ruta/",
+      "descripcion": "rsync"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# rsync por SSH con clave específica\nrsync -avz -e \"ssh -i ~/.ssh/clave.pem\" \\\n    ./directorio/ usuario@servidor:/ruta/\n\n# rsync a través de ProxyJump\nrsync -avz -e \"ssh -J bastion@servidor.com\" \\\n    ./directorio/ usuario@10.0.0.50:/ruta/",
+      "descripcion": "rsync con opciones SSH"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Troubleshooting"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Verificar clave pública/privada\nssh-keygen -l -f ~/.ssh/id_ed25519\n\n# Ver fingerprints de known_hosts\nssh-keygen -l -f ~/.ssh/known_hosts\n\n# Si el servidor cambió (possible attack)\n# Eliminar entrada específica\nssh-keygen -R servidor.com\nssh-keygen -R 192.168.1.100\n\n# Ver todas las claves cargadas en agent\nssh-add -l\n\n# Debug de conexión\nssh -vvv usuario@servidor",
+      "descripcion": "Diagnóstico de claves"
+    },
+    {
+      "tipo": "comando",
+      "valor": "# Verificar permisos\nls -la ~/.ssh/\n# Debe mostrar:\n# drwx------  ~/.ssh/\n# -rw-------  id_ed25519\n# -rw-r--r--  id_ed25519.pub\n# -rw-r--r--  authorized_keys\n\n# Corregir permisos\nchmod 700 ~/.ssh\nchmod 600 ~/.ssh/*\nchmod 644 ~/.ssh/*.pub",
+      "descripcion": "Permisos"
+    },
+    {
+      "tipo": "titulo",
+      "valor": "Errores Frecuentes"
+    },
+    {
+      "tipo": "lista",
+      "valor": "1. Permisos incorrectos en ~/.ssh/ — Clave privada accesible o directorio no seguro\n2. Clave pública no en authorized_keys — Verificar contenido exacto\n3. Servidor con IP cambiada — Known_hosts conflict, usar ssh-keygen -R\n4. Agent sin clave cargada — ssh-add -l muestra vacio, usar ssh-add\n5. Puerto diferente no especificado — ssh -p [puerto] o usar config\n6. Root login denegado — Verificar PermitRootLogin en sshd_config"
+    }
+  ]
+}
