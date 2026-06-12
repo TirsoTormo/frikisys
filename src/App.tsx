@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Navbar, Sidebar, ArticleGrid, ArticleViewer, Footer } from './components';
 import { Article, CodeBlock } from './components';
+import Landing from './components/Landing';
 import { 
   allArticleCards, 
   getArticleById, 
-  contentToMarkdown, 
+  contentToMarkdown,
   contentToCodeBlocks,
   ArticleContent 
 } from './utils/contentLoader';
@@ -20,6 +21,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAISkills, setShowAISkills] = useState(false);
   const [legalPage, setLegalPage] = useState<LegalPage>(null);
+  const [showLanding, setShowLanding] = useState(true); // Track if landing is shown
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   // Scroll to top when view changes
@@ -28,6 +30,24 @@ function App() {
       mainContentRef.current.scrollTop = 0;
     }
   }, [currentView, selectedArticleId]);
+
+  // Handle landing navigation - CTA buttons
+  const handleNavigateToSection = (category: string) => {
+    setActiveCategory(category);
+    setShowLanding(false); // Hide landing, show article grid
+    setCurrentView('home');
+  };
+
+  const handleLandingArticleClick = (articleId: string) => {
+    const article = allArticleCards.find((a) => a.id === articleId);
+    if (article) {
+      setSelectedArticleId(articleId);
+      setCurrentView('article');
+    }
+  };
+
+  // Get featured articles (top 3)
+  const featuredArticles = allArticleCards.slice(0, 3);
 
   // Get articles based on category or search
   const getDisplayedArticles = (): Article[] => {
@@ -66,14 +86,20 @@ function App() {
     setCurrentView('home');
     setSelectedArticleId(null);
     setShowAISkills(false);
+    setShowLanding(true); // Reset to landing on logo click
+    setSearchQuery(''); // Clear search on logo click
   };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    if (query) {
+      setShowLanding(false); // Hide landing when searching
+    }
   };
 
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId);
+    setShowLanding(false); // Hide landing when selecting category from sidebar
   };
 
   const handleLegalClick = (section: string) => {
@@ -199,21 +225,13 @@ function App() {
               </div>
             </>
           ) : currentView === 'home' ? (
-            <>
-              {/* Hero section */}
-              <div className="mb-12 text-center">
-                <div className="pixel-separator mb-6">
-                  <h1 className="font-mono text-3xl md:text-4xl font-bold text-text-primary px-4">
-                    Wiki de SysAdmin & SysOps
-                  </h1>
-                </div>
-                <p className="font-mono text-text-secondary max-w-2xl mx-auto">
-                  Documentación práctica y comandos esenciales para profesionales de 
-                  infraestructura Linux, virtualización y cloud computing.
-                </p>
-              </div>
-
-              {/* Article Grid */}
+            showLanding && !searchQuery ? (
+              <Landing
+                onNavigateToSection={handleNavigateToSection}
+                onArticleClick={handleLandingArticleClick}
+                featuredArticles={featuredArticles}
+              />
+            ) : (
               <ArticleGrid
                 articles={getDisplayedArticles()}
                 onArticleClick={handleArticleClick}
@@ -221,7 +239,7 @@ function App() {
                 emptyMessage={searchQuery ? 'No se encontraron resultados' : 'No hay artículos'}
                 columns={3}
               />
-            </>
+            )
           ) : currentView === 'legal' ? (
             <>
               {/* Legal Pages */}

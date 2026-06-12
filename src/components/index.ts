@@ -11,3 +11,5 @@ export type { ArticleViewerProps, CodeBlock } from './ArticleViewer';
 export { default as Footer } from './Footer';
 export type { FooterProps } from './Footer';
 export { default as PixelIcon } from './PixelIcon';
+export { default as Landing } from './Landing';
+export type { LandingProps } from './Landing';

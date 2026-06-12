@@ -1,0 +1,200 @@
+{
+  "title": "Disco lleno en Linux: Guía completa de diagnóstico y solución",
+  "slug": "disco-lleno-linux",
+  "category": "troubleshooting",
+  "tags": ["linux", "disk", "storage", "sysadmin", "troubleshooting"],
+  "description": "Guía práctica para diagnosticar y resolver problemas de espacio en disco lleno en servidores y sistemas Linux. Comandos esenciales, herramientas visuales y estrategias de prevención.",
+  "sections": [
+    {
+      "id": "introduccion",
+      "title": "Introducción",
+      "content": "Cuando un servidor Linux se queda sin espacio en disco, los servicios comienzan a fallar, los logs se detienen y el sistema puede quedar prácticamente inoperable. Esta guía te proporciona un flujo de trabajo sistemático para diagnosticar el problema, recuperar espacio rápidamente y prevenir que se repita.",
+      "level": 1
+    },
+    {
+      "id": "diagnostico",
+      "title": "1. Diagnóstico inicial",
+      "content": "Antes de tomar cualquier acción, es fundamental entender exactamente cuánto espacio tienes disponible y dónde se está usando.",
+      "level": 2,
+      "subsections": [
+        {
+          "id": "df-basico",
+          "title": "Verificar espacio general",
+          "command": "df -h",
+          "explanation": "Muestra el espacio usado y disponible en todos los sistemas de archivos montados. La opción -h presenta los valores en formato legible (KB, MB, GB). Presta especial atención a la columna 'Use%' para identificar particiones críticas.",
+          "example_output": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1       100G   95G  5.0G  95% /\ntmpfs           7.8G     0  7.8G   0% /dev/shm\n/dev/sdb1       500G  450G   50G  90% /data"
+        },
+        {
+          "id": "du-carpetas",
+          "title": "Identificar carpetas que más espacio consumen",
+          "command": "du -sh /*",
+          "explanation": "Calcula el tamaño total de cada directorio de primer nivel. Esto te ayuda a identificar rápidamente qué área del sistema está consumiendo más espacio (por ejemplo, /var, /home, /tmp).",
+          "note": "Este comando puede tardar varios minutos en sistemas con muchos archivos. Usa el flag --exclude si necesitas filtrar directorios específicos."
+        },
+        {
+          "id": "du-var",
+          "title": "Análisis detallado de /var",
+          "command": "du -ah --max-depth=1 /var | sort -rh | head -10",
+          "explanation": "Muestra los 10 directorios o archivos más grandes dentro de /var, que es donde típicamente se acumulan logs, cachés y datos de aplicaciones. El flag -h permite ordenar por tamaño de forma legible.",
+          "example_output": "48G     /var/log\n12G     /var/lib\n8G      /var/cache\n2G      /var/backups"
+        }
+      ]
+    },
+    {
+      "id": "limpieza-rapida",
+      "title": "2. Limpieza rápida de espacio",
+      "content": "Una vez identificado el problema, estas acciones proporcionan alivio inmediato sin afectar el funcionamiento del sistema.",
+      "level": 2,
+      "subsections": [
+        {
+          "id": "limpiar-logs",
+          "title": "Limpiar archivos de log",
+          "command": "find /var/log -name \"*.log\" -exec truncate -s 0 {} \\;",
+          "explanation": "Vacía todos los archivos .log en /var/log sin eliminarlos, preservando los nombres de archivo y permisos. Esto es preferible a eliminarlos, ya que algunos servicios pueden tener problemas si su archivo de log desaparece.",
+          "warning": "Antes de truncar, considera hacer una copia de seguridad con: cp access.log access.log.bak. Además, algunos servicios pueden necesitar ser reiniciados para volver a escribir en los logs."
+        },
+        {
+          "id": "limpiar-apt",
+          "title": "Limpiar paquetes apt",
+          "command": "apt autoremove && apt autoclean",
+          "explanation": "apt autoremove elimina dependencias huérfanas y kernels antiguos no utilizados. apt autoclean elimina del caché los paquetes .deb que ya no pueden ser descargados. Juntos pueden liberar varios gigabytes.",
+          "note": "En sistemas CentOS/RHEL usa: yum clean all. En Arch Linux: pacman -Sc."
+        },
+        {
+          "id": "limpiar-docker",
+          "title": "Limpiar contenedores y imágenes Docker",
+          "command": "docker system prune -a",
+          "explanation": "Elimina todos los contenedores parados, redes no usadas, imágenes sin标签 y caché de build. El flag -a elimina todas las imágenes no utilizadas (no solo las colgantes), liberando significativamente más espacio.",
+          "warning": "Asegúrate de que no necesites ninguna imagen o contenedor detenido antes de ejecutar este comando. Usa docker system prune (sin -a) para una limpieza más conservadora."
+        },
+        {
+          "id": "limpiar-temp",
+          "title": "Limpiar archivos temporales",
+          "command": "rm -rf /tmp/*",
+          "explanation": "Elimina todo el contenido del directorio /tmp. Muchos procesos escriben archivos temporales aquí. En sistemas con mucho tiempo de actividad, esta carpeta puede acumular gigabytes de datos innecesarios.",
+          "note": "Algunos archivos en /tmp pueden estar en uso por procesos activos. rm -rf generalmente los ignora, pero es posible que veas errores para archivos abiertos."
+        }
+      ]
+    },
+    {
+      "id": "archivos-grandes",
+      "title": "3. Encontrar archivos grandes",
+      "content": "Para localizar archivos específicos que consumen espacio excesivo, utiliza estas búsquedas dirigidas.",
+      "level": 2,
+      "subsections": [
+        {
+          "id": "find-grandes",
+          "title": "Buscar archivos mayores a 100MB",
+          "command": "find / -type f -size +100M -exec ls -lh {} \\;",
+          "explanation": "Busca recursivamente todos los archivos regulares mayores a 100MB en todo el sistema. Puedes ajustar el tamaño cambiando +100M a +1G, +500M, etc. La salida incluye el tamaño formateado y la ruta completa.",
+          "note": "Si sabes que los archivos grandes están en una ubicación específica (como /home), puedes limitar la búsqueda: find /home -type f -size +100M"
+        },
+        {
+          "id": "ls-ordenar",
+          "title": "Ordenar archivos por tamaño",
+          "command": "ls -lhS ruta/al/directorio",
+          "explanation": "Lista los archivos en orden descendente por tamaño. Sustituye 'ruta/al/directorio' por la ubicación que deseas analizar. El flag -S activa la ordenación por tamaño, -h muestra bytes legibles.",
+          "example": "ls -lhS /var/log | head -20  # Muestra los 20 archivos de log más grandes"
+        }
+      ]
+    },
+    {
+      "id": "monitoring",
+      "title": "4. Herramientas de monitoreo visual",
+      "content": "Estas herramientas proporcionan una interfaz visual para explorar el uso del disco de forma interactiva.",
+      "level": 2,
+      "subsections": [
+        {
+          "id": "ncdu",
+          "title": "NCurses Disk Usage (ncdu)",
+          "command": "ncdu /",
+          "explanation": "Analizador de disco con interfaz ncurses basado en terminal. Muestra un navegador interactivo donde puedes explorar directorios, ver el tamaño de cada uno y eliminar archivos directamente. Es ideal para servidores sin entorno gráfico.",
+          "installation": "apt install ncdu  # Debian/Ubuntu\nyum install ncdu    # CentOS/RHEL\nbrew install ncdu   # macOS",
+          "note": "La primera ejecución escanea todo el sistema de archivos, lo cual puede tardar. Usa ncdu -x / para evitar montar sistemas de archivos externos."
+        },
+        {
+          "id": "baobab",
+          "title": "Baobab (Analizador de uso de disco)",
+          "command": "baobab",
+          "explanation": "Utilidad GNOME de análisis de disco con representación visual en forma de diagrama de treemap. Muestra gráficamente qué directorios y archivos ocupan más espacio con colores diferenciados.",
+          "installation": "apt install baobab  # Debian/Ubuntu\nyum install baobab  # CentOS/RHEL",
+          "note": "Solo funciona en sistemas con entorno gráfico. Para servidores headless, usa ncdu como alternativa."
+        }
+      ]
+    },
+    {
+      "id": "prevencion",
+      "title": "5. Prevención y monitoreo continuo",
+      "content": "Para evitar futuros problemas de espacio, implementa estas prácticas de mantenimiento proactivo.",
+      "level": 2,
+      "subsections": [
+        {
+          "id": "logrotate",
+          "title": "Configurar logrotate",
+          "explanation": "Logrotate gestiona la rotación automática de archivos de log, comprimirlos, limitarlos por tamaño y eliminarlos después de un período. La configuración principal está en /etc/logrotate.conf y los archivos específicos en /etc/logrotate.d/.",
+          "example_config": "/var/log/miapp/*.log {\n    daily              # Rotación diaria\n    missingok          # No error si falta el archivo\n    rotate 14          # Mantener 14 archivos\n    compress           # Comprimir logs antiguos\n    delaycompress      # Comprimir un día después\n    notifempty         # No rotar si está vacío\n    create 0640 root adm\n}",
+          "note": "Cada aplicación que genera logs debería tener su configuración en /etc/logrotate.d/. Esto es especialmente crítico para aplicaciones que generan muchos logs como Tomcat, PostgreSQL o servicios propios."
+        },
+        {
+          "id": "alertas",
+          "title": "Configurar alertas de espacio",
+          "explanation": "Configura monitoreo automatizado para recibir notificaciones cuando el disco supere el 80% de uso. Esto permite tomar acción antes de que el sistema se quede completamente sin espacio.",
+          "script": "#!/bin/bash\nTHRESHOLD=80\ndf -h | awk -v threshold=$THRESHOLD '\n$5 ~ /%/$ {\n    usage=$(substr($5, 1, length($5)-1))\n    if (usage > threshold) {\n        print \"Alerta: El disco \"$6\" está al \"usage\"%\"\n        # Enviar notificación (ajusta según tu sistema)\n        # mail -s \"Disco lleno\" admin@example.com\n    }\n}'",
+          "cron": "# Agregar al crontab: crontab -e\n# Verificar disco cada hora\n0 * * * * /opt/scripts/check-disk.sh",
+          "note": "También puedes usar herramientas como Zabbix, Nagios, Prometheus con node_exporter, o incluso un simple script en cron. Para entornos críticos, configura alertas escalonadas (80% warning, 90% critical)."
+        }
+      ]
+    },
+    {
+      "id": "comandos-utiles",
+      "title": "6. Comandos útiles adicionales",
+      "level": 2,
+      "content": "Referencia rápida de comandos que complementan el diagnóstico y limpieza.",
+      "commands": [
+        {
+          "command": "lsof +L1",
+          "description": "Lista archivos abiertos eliminados que aún consumen espacio (archivos huérfanos)"
+        },
+        {
+          "command": "sync && echo 3 > /proc/sys/vm/drop_caches",
+          "description": "Limpia el caché de página, dentries e inodos del kernel (solo como root, para pruebas)"
+        },
+        {
+          "command": "journalctl --vacuum-size=500M",
+          "description": "Limita los logs de systemd a 500MB máximo"
+        },
+        {
+          "command": "docker volume prune",
+          "description": "Elimina volúmenes Docker no utilizados"
+        },
+        {
+          "command": "npm cache clean --force",
+          "description": "Limpia el caché del gestor de paquetes npm"
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Conclusión",
+      "content": "El manejo de espacio en disco en Linux requiere un enfoque sistemático: diagnosticar primero para entender el problema, actuar rápidamente para recuperar funcionalidad, y prevenir con automatización y monitoreo. Implementa las alertas temprano y revisa regularmente los directorios más problemáticos (/var/log, /tmp, /home) para evitar situaciones de crisis.",
+      "level": 1
+    }
+  ],
+  "metadata": {
+    "author": "SysOps Wiki Team",
+    "created": "2026-06-12",
+    "updated": "2026-06-12",
+    "difficulty": "intermediate",
+    "readingTime": "12 minutos",
+    "requirements": [
+      "Acceso root o sudo",
+      "Terminal SSH o acceso local",
+      "Conocimientos básicos de línea de comandos Linux"
+    ],
+    "relatedArticles": [
+      "monitorizacion-servidores-linux",
+      "comandos-basicos-sysadmin",
+      "docker-administracion"
+    ]
+  }
+}

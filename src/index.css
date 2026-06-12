@@ -315,10 +315,45 @@ button, a, [role="button"] {
   font-weight: 600;
 }
 
-.article-content code:not(.code-block code) {
+.article-content code:not(.code-block code):not(.inline-code) {
   background-color: var(--bg-card);
   padding: 2px 6px;
   border-radius: 2px;
   font-size: 0.875em;
   color: var(--accent);
+}
+
+.article-content .inline-code {
+  background-color: var(--bg-card);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 0.875em;
+  color: #22c55e;
+}
+
+.article-content .code-fence {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  position: relative;
+}
+
+.article-content .code-fence::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: var(--accent);
+}
+
+.article-content .code-fence code {
+  color: var(--text-primary);
+  font-family: 'IBM Plex Mono', monospace;
 }

@@ -39,24 +39,55 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({
   }, [content]);
 
   const parseMarkdown = (md: string): string => {
-    let html = md
-      // Headers
-      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      // Bold
-      .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-      // Italic
-      .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-      // Inline code
-      .replace(/`([^`]+)`/gim, '<code>$1</code>')
-      // Links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-      // Line breaks
-      .replace(/\n\n/gim, '</p><p>')
-      .replace(/\n/gim, '<br/>');
+    let html = md;
     
-    return `<p>${html}</p>`;
+    // Fenced code blocks first (```bash ... ```)
+    html = html.replace(/```(\w+)?\n([\s\S]*?)```/gim, (_, lang, code) => {
+      const language = lang || 'bash';
+      return `<pre class="code-fence"><code class="language-${language}">${escapeHtml(code.trim())}</code></pre>`;
+    });
+    
+    // Headers (before line breaks to avoid conflicts)
+    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    
+    // Lists
+    html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+    
+    // Bold and italic
+    html = html.replace(/\*\*\*(.*?)\*\*\*/gim, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+    
+    // Inline code
+    html = html.replace(/`([^`]+)`/gim, '<code class="inline-code">$1</code>');
+    
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    
+    // Paragraphs - wrap non-tag content
+    const lines = html.split('\n\n');
+    html = lines.map(line => {
+      line = line.trim();
+      if (!line) return '';
+      if (line.startsWith('<h') || line.startsWith('<pre') || line.startsWith('<ul') || line.startsWith('<ol')) {
+        return line;
+      }
+      return `<p>${line.replace(/\n/g, '<br/>')}</p>`;
+    }).join('\n');
+    
+    return html;
+  };
+  
+  const escapeHtml = (text: string): string => {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   };
 
   const categoryColors: Record<string, string> = {

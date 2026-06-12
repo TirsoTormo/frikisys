@@ -1,0 +1,172 @@
+{
+  "title": "Cuando la red no funciona - Diagnóstico paso a paso",
+  "description": "Guía completa para diagnosticar y resolver problemas de conectividad de red en sistemas Linux",
+  "category": "troubleshooting",
+  "tags": ["linux", "red", "network", "troubleshooting", "dns", "firewall"],
+  "platform": "linux",
+  "difficulty": "intermediate",
+  "content": {
+    "sections": [
+      {
+        "title": "1. Checklist Básico - Orden de Ejecución",
+        "content": "Es fundamental seguir este orden para diagnosticar eficientemente. Cada paso descarta o confirma un tipo de problema diferente.",
+        "commands": [
+          {
+            "description": "Verificar IP asignada a las interfaces de red",
+            "command": "ip addr",
+            "expected": "Deberías ver una dirección IP válida (ej: 192.168.1.100) en al menos una interfaz (eth0, ens33, etc.)"
+          },
+          {
+            "description": "Verificar gateway y rutas configuradas",
+            "command": "ip route",
+            "expected": "Deberías ver una ruta default que apunte al gateway de tu red"
+          },
+          {
+            "description": "Test de conectividad básica (ping a Google DNS)",
+            "command": "ping 8.8.8.8",
+            "expected": "Respuestas exitosas confirman que la conectividad IP funciona"
+          },
+          {
+            "description": "Test de resolución DNS",
+            "command": "ping google.com",
+            "expected": "Si funciona, DNS está configurado correctamente. Si falla con 'ping: google.com: Name or service not known', el problema es DNS"
+          }
+        ]
+      },
+      {
+        "title": "2. Diagnóstico de DNS",
+        "content": "DNS es una de las causas más comunes de problemas de 'red que no funciona'. El sistema puede tener conectividad pero no resolver nombres de dominio.",
+        "commands": [
+          {
+            "description": "Ver configuración actual de DNS",
+            "command": "cat /etc/resolv.conf",
+            "expected": "Deberías ver líneas 'nameserver' con IPs válidas (ej: 8.8.8.8, 1.1.1.1)"
+          },
+          {
+            "description": "Consulta DNS simple (deprecated pero funcional)",
+            "command": "nslookup google.com",
+            "expected": "Muestra la dirección IP del dominio si DNS funciona"
+          },
+          {
+            "description": "Consulta DNS detallada",
+            "command": "dig google.com",
+            "expected": "Consulta completa que muestra server usado, tiempo de respuesta y respuesta final"
+          }
+        ],
+        "troubleshooting_notes": [
+          "Si /etc/resolv.conf está vacío o tiene servidores inválidos, edítalo directamente o verifica systemd-resolved",
+          "En sistemas con systemd, verifica: systemd-resolve --status",
+          "Los servidores DNS más comunes y confiables son: 8.8.8.8 (Google) y 1.1.1.1 (Cloudflare)"
+        ]
+      },
+      {
+        "title": "3. Puertos y Conexiones",
+        "content": "Verificar qué puertos están escuchando y qué conexiones activas existen te ayuda a entender si el problema es de red o de la aplicación.",
+        "commands": [
+          {
+            "description": "Listar puertos en escucha (alternativa moderna a netstat)",
+            "command": "ss -tuln",
+            "flags": "-t (TCP), -u (UDP), -l (listening), -n (no resolve)",
+            "expected": "Lista de puertos abiertos esperando conexiones"
+          },
+          {
+            "description": "Ver conexiones establecidas",
+            "command": "netstat -ant",
+            "flags": "-a (all), -n (numeric), -t (TCP)",
+            "expected": "Conexiones activas con IPs y puertos"
+          },
+          {
+            "description": "Test de conectividad local",
+            "command": "curl -v http://localhost",
+            "expected": "Respuesta HTTP si hay un servicio web corriendo localmente"
+          }
+        ],
+        "troubleshooting_notes": [
+          "Si sshd no aparece en ss -tuln, el servicio no está corriendo: systemctl start sshd",
+          "Conexiones en estado TIME_WAIT son normales - indican conexiones cerradas recientemente",
+          "Conexiones en estado SYN_RECV pueden indicar un ataque SYN flood"
+        ]
+      },
+      {
+        "title": "4. Firewall",
+        "content": "El firewall es frecuentemente el culpable cuando la conectividad debería funcionar pero no lo hace.",
+        "commands": [
+          {
+            "description": "Ver reglas de iptables (Firewall legacy)",
+            "command": "iptables -L -n",
+            "flags": "-L (list), -n (numeric)",
+            "expected": "Lista de reglas activas.Policy ACCEPT es permisivo, DROP o REJECT es restrictivo"
+          },
+          {
+            "description": "Ver estado de UFW (Ubuntu/Debian firewall)",
+            "command": "ufw status",
+            "expected": "Estado: active o inactive. Muestra reglas aplicadas"
+          },
+          {
+            "description": "Ver estado de firewalld (RHEL/CentOS/Fedora)",
+            "command": "systemctl status firewalld",
+            "expected": "Servicio activo (running) o inactivo (dead)"
+          }
+        ],
+        "troubleshooting_notes": [
+          "Para abrir un puerto temporalmente con iptables: iptables -I INPUT -p tcp --dport 80 -j ACCEPT",
+          "Con UFW: ufw allow 80/tcp",
+          "Con firewalld: firewall-cmd --add-port=80/tcp --permanent"
+        ]
+      },
+      {
+        "title": "5. Casos Comunes y Soluciones",
+        "content": "Problemas frecuentemente encontrados en entornos de producción.",
+        "cases": [
+          {
+            "problema": "IP estática mal configurada",
+            "sintomas": "Sin IP visible, o IP en rango incorrecto",
+            "solucion": "Verificar configuración en /etc/network/interfaces o /etc/sysconfig/network-scripts/ifcfg-*. Verificar que gateway y netmask sean correctos."
+          },
+          {
+            "problema": "DNS apuntando a servidor caído",
+            "sintomas": "ping 8.8.8.8 funciona pero ping google.com falla",
+            "solucion": "Editar /etc/resolv.conf y cambiar nameserver a 8.8.8.8 o 1.1.1.1"
+          },
+          {
+            "problema": "Puerto bloqueado por firewall",
+            "sintomas": "Conexión refused o timeout al conectar",
+            "solucion": "Verificar firewall con iptables/ufw/firewalld. Abrir puerto específico si es necesario."
+          },
+          {
+            "problema": "Cable desconectado o problema físico",
+            "sintomas": "No hay link, interface DOWN",
+            "solucion": "Verificar con ip link que la interfaz está UP. Revisar cable, switch, luces de link. Probar con ethtool."
+          }
+        ]
+      },
+      {
+        "title": "Flujo de Diagnóstico Recomendado",
+        "content": "Sigue este flujo para encontrar el problema eficientemente:",
+        "flow": [
+          "1. Ejecuta 'ip addr' → ¿Hay IP?",
+          "   └─ NO → Problema de IP/DHCP",
+          "   └─ SÍ → Continua",
+          "2. Ejecuta 'ping 8.8.8.8' → ¿Responde?",
+          "   └─ NO → Problema de gateway/físico",
+          "   └─ SÍ → Continua",
+          "3. Ejecuta 'ping google.com' → ¿Resuelve?",
+          "   └─ NO → Problema de DNS",
+          "   └─ SÍ → Continua",
+          "4. Verifica firewall si el servicio específico no responde"
+        ]
+      }
+    ],
+    "comandos_esenciales_resumen": [
+      "ip addr              → Ver interfaces y IPs",
+      "ip route             → Ver gateway y rutas",
+      "ping 8.8.8.8         → Test conectividad externa",
+      "ping google.com      → Test DNS",
+      "cat /etc/resolv.conf → Ver servidores DNS",
+      "ss -tuln             → Ver puertos abiertos",
+      "iptables -L -n       → Ver reglas firewall",
+      "ufw status           → Estado UFW (Debian/Ubuntu)",
+      "systemctl status firewalld → Estado firewalld (RHEL)"
+    ]
+  }
+}
