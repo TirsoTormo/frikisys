@@ -229,7 +229,7 @@ const Landing: React.FC<LandingProps> = ({ onNavigateToSection, onArticleClick, 
             </a>
 
             <a
-              href="#"
+              href="/legal/licencia"
               className="font-mono text-sm text-text-secondary hover:text-text-primary transition-colors"
             >
               Licencia MIT
