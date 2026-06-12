@@ -1,46 +1,87 @@
-# Getting Started with Create React App
+# Frikisys — Wiki de SysAdmin & SysOps en Español
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Documentación práctica y comandos esenciales para profesionales de infraestructura Linux, virtualización y cloud computing. 100% en español.
 
-## Available Scripts
+**[Ver la web →](https://frikisys.com)**
 
-In the project directory, you can run:
+## Stack
 
-### `npm start`
+- **Frontend:** React 19 + TypeScript
+- **Estilos:** Tailwind CSS 3
+- **Build:** Create React App
+- **Deploy:** Vercel
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Empezar en local
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```bash
+# Clonar el repo
+git clone https://github.com/TirsoTormo/frikisys.git
+cd frikisys
 
-### `npm test`
+# Instalar dependencias
+npm install
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Arrancar en desarrollo
+npm start
+```
 
-### `npm run build`
+Abre [http://localhost:3000](http://localhost:3000) — el navegador se recarga al hacer cambios.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Scripts disponibles
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+| Comando | Qué hace |
+|---|---|
+| `npm start` | Servidor de desarrollo |
+| `npm run build` | Build de producción (en `build/`) |
+| `npm test` | Tests con Create React App |
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Estructura del proyecto
 
-### `npm run eject`
+```
+src/
+├── components/     # Componentes React (Landing, ArticleViewer, etc.)
+├── content/        # Artículos en formato JSON
+│   ├── linux/
+│   └── virtualizacion/
+└── index.css       # Estilos globales y variables CSS
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Añadir un artículo
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. Crea un archivo JSON en `src/content/linux/` o `src/content/virtualizacion/`
+2. Sigue el schema:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```json
+{
+  "id": "nombre-articulo",
+  "title": "Título del artículo",
+  "category": "linux",
+  "content": "Contenido en Markdown...",
+  "tags": ["etiqueta1", "etiqueta2"],
+  "author": "Frikisys Team",
+  "date": "2025-01-01",
+  "codeBlocks": [
+    { "language": "bash", "code": "echo 'hola'" }
+  ]
+}
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+3. El artículo aparece automáticamente en la web.
 
-## Learn More
+## Despliegue
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+El proyecto se despliega automáticamente con Vercel cada vez que se hace push a `main`. No necesitas configuración extra.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Para dominio personalizado o ajustes, ver el dashboard de [Vercel](https://vercel.com).
+
+## Contribuir
+
+1. Haz un fork del repo
+2. Crea una rama para tu cambio: `git checkout -b mi-nuevo-articulo`
+3. Añade o modifica artículos en `src/content/`
+4. Ejecuta `npm run build` para verificar que todo compila
+5. Haz un PR a `main`
+
+## Licencia
+
+MIT — libre para usar, modificar y distribuir.
