@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Analytics } from "@vercel/analytics/react"
 import { Navbar, Sidebar, ArticleGrid, ArticleViewer, Footer } from './components';
 import { Article, CodeBlock } from './components';
 import Landing from './components/Landing';
@@ -371,6 +372,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.`}
 
       {/* Footer */}
       <Footer version="0.1.0" onShowAISkills={() => setShowAISkills(true)} onLegalClick={handleLegalClick} />
+
+      <Analytics />
     </div>
   );
 }

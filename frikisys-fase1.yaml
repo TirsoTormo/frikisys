@@ -1,0 +1,267 @@
+version: 1
+plan:
+  name: 'Frikisys Fase 1 - Landing + Troubleshooting'
+  max_concurrency: 3
+  max_consecutive_failures: 2
+  max_cycles: 5
+  auto_accept: false
+  verifier_config:
+    default_verifiers: [verifier]
+    audit_sample_rate: 0.0
+tasks:
+  - id: landing-page
+    title: 'Crear landing page con hero y estadísticas'
+    prompt: |
+      Crea una landing page impactante para Frikisys en C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\components\Landing.tsx
+      
+      DISEÑO:
+      - Estilo dark minimal con pixel art sutil (mismo que el resto de la app)
+      - Tipografía: IBM Plex Mono
+      - Colores: fondo #0f0f0f, cards #1a1a1a, texto #e5e5e5, acento #6b7280
+      
+      ESTRUCTURA:
+      1. Hero section:
+         - "Frikisys" como logo/ título principal
+         - Subtítulo: "La wiki que los SysAdmins merecemos"
+         - Descripción: "Documentación práctica, comandos esenciales y guías de troubleshooting para profesionales de infraestructura Linux y virtualización."
+         - 2 CTAs: "Explorar Linux" y "Explorar Virtualización"
+      
+      2. Estadísticas (contadores animados):
+         - 17 artículos
+         - 2 categorías
+         - 100% español
+      
+      3. Artículos destacados (los 3 más útiles):
+         - Comandos Básicos de Linux
+         - Docker: Primeros pasos
+         - Troubleshooting: CPU 100%
+      
+      4. Footer minimalista con enlaces a GitHub
+      
+      IMPORTANTE:
+      - El componente debe recibir props: onNavigateToSection(category: string)
+      - Exportar como default
+      - Usar las tarjetas de ArticleCard existentes
+      - Incluir animaciones sutiles (fade-in, bounce en stats)
+    assigned_to: frontend-dev
+    verified_by: verifier
+    verify_prompt: 'Verificar que el componente compila, usa los colores correctos, es responsive y tiene todos los elementos del diseño.'
+    timeout_ms: 1800000
+  
+  - id: article-troubleshooting-cpu
+    title: 'Artículo: CPU 100% - Cómo diagnosticar'
+    prompt: |
+      Crea el archivo C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\content\linux\troubleshooting-cpu.json
+      
+      TEMA: Cómo diagnosticar y resolver cuando el CPU llega al 100% en Linux
+      
+      ESTRUCTURA DEL JSON (mismo formato que los demás artículos):
+      ```json
+      {
+        "id": "troubleshooting-cpu",
+        "titulo": "CPU al 100%: Guía completa de diagnóstico",
+        "categoria": "linux",
+        "descripcion": "Aprende a identificar qué proceso consume todo el CPU y cómo resolverlo paso a paso.",
+        "contenido": [
+          {"tipo": "texto", "valor": "..."},
+          {"tipo": "comando", "valor": "comando", "descripcion": "descripción"},
+          {"tipo": "titulo", "valor": "Título de sección"},
+          {"tipo": "lista", "valor": "item1\nitem2\nitem3"}
+        ]
+      }
+      ```
+      
+      CONTENIDO A CUBRIR:
+      1. Introducción - Por qué es crítico y escenarios comunes
+      2. Diagnóstico rápido (30 segundos):
+         - top -c (ver procesos por CPU)
+         - ps aux --sort=-%cpu | head -10
+         3. Análisis profundo:
+         - htop (más visual)
+         - pidstat 1 5 (ver por proceso cada 1s)
+         - strace -p <pid> (ver syscalls)
+      4. Causas comunes:
+         - Bucle infinito en aplicación
+         - fork bomb
+         - Malware/crypto miner
+         - Alta carga de I/O
+      5. Soluciones:
+         - kill -STOP <pid> (pausar para investigar)
+         - kill -9 <pid> (matar si es dañino)
+         - renice -n 10 <pid> (reducir prioridad)
+      6. Prevención:
+         - Montiorización con Prometheus/Grafana
+         - Alerts en CPU > 80%
+      
+      ESTILO: Técnico pero directo. Cada comando con ejemplo de output real.
+    assigned_to: content-writer
+    verified_by: verifier
+    verify_prompt: 'Verificar que el JSON es válido, el contenido está en español, los comandos son funcionales y siguen el schema correcto.'
+    timeout_ms: 900000
+  
+  - id: article-troubleshooting-disk
+    title: 'Artículo: Disco lleno - Qué hacer'
+    prompt: |
+      Crea C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\content\linux\troubleshooting-disk.json
+      
+      TEMA: Qué hacer cuando el disco está lleno en Linux
+      
+      CONTENIDO:
+      1. Diagnóstico:
+         - df -h (espacio general)
+         - du -sh /* (buscar carpetas grandes)
+         - du -ah --max-depth=1 /var | sort -rh | head -10
+      
+      2. Limpieza rápida:
+         - logs: find /var/log -name "*.log" -exec truncate -s 0 {} \;
+         - apt: apt autoremove && apt autoclean
+         - docker: docker system prune -a
+         - temporales: rm -rf /tmp/*
+      
+      3. Encontrar archivos grandes:
+         - find / -type f -size +100M
+         - ls -lhS (ordenar por tamaño)
+      
+      4. Monitoring:
+         - ncdu (visual interativo)
+         - baobab (GUI)
+      
+      5. Prevención:
+         - logrotate config
+         - Alerts en disco > 80%
+    assigned_to: content-writer
+    verified_by: verifier
+    verify_prompt: 'Verificar JSON válido, contenido en español, comandos funcionales.'
+    timeout_ms: 900000
+  
+  - id: article-troubleshooting-memory
+    title: 'Artículo: Memoria agotada - Out of Memory'
+    prompt: |
+      Crea C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\content\linux\troubleshooting-memory.json
+      
+      TEMA: Diagnosticar y resolver problemas de memoria en Linux
+      
+      CONTENIDO:
+      1. Diagnóstico:
+         - free -h (memoria total, usada, libre)
+         - vmstat 1 5 (stats de memoria virtual)
+         - cat /proc/meminfo (detalles kernel)
+      
+      2. Procesos que más consumen:
+         - ps aux --sort=-%mem | head -10
+         - top + M (ordenar por memoria)
+      
+      3. Tipos de problemas:
+         - Memory leak (fuga de memoria)
+         - OOM Killer (kernel mata procesos)
+         - Swap saturado
+      
+      4. Soluciones:
+         - kill -9 <pid>
+         - swapoff -a && swapon -a (limpiar swap)
+         - echo 3 > /proc/sys/vm/drop_caches
+      
+      5. Configuración:
+         - /etc/sysctl.conf (vm.swappiness)
+         - swappiness = 10 (reducir uso de swap)
+    assigned_to: content-writer
+    verified_by: verifier
+    verify_prompt: 'Verificar JSON válido, contenido en español, comandos funcionales.'
+    timeout_ms: 900000
+  
+  - id: article-troubleshooting-network
+    title: 'Artículo: Red no funciona - Troubleshooting'
+    prompt: |
+      Crea C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\content\linux\troubleshooting-network.json
+      
+      TEMA: Cuando la red no funciona - Diagnóstico paso a paso
+      
+      CONTENIDO:
+      1. Checklist básico (orden很重要):
+         - ip addr (ver IP asignada)
+         - ip route (ver gateway)
+         - ping 8.8.8.8 (conectividad básica)
+         - ping google.com (DNS funciona?)
+      
+      2. DNS:
+         - cat /etc/resolv.conf
+         - nslookup google.com
+         - dig google.com
+      
+      3. Puertos y conexiones:
+         - ss -tuln (puertos escuchando)
+         - netstat -ant (conexiones establecidas)
+         - curl -v http://localhost (test local)
+      
+      4. Firewall:
+         - iptables -L -n
+         - ufw status
+         - systemctl status firewalld
+      
+      5. Casos comunes:
+         - IP estática mal configurada
+         - DNS apuntando a server caído
+         - Puerto bloqueado por firewall
+         - Cable/desconexión física
+    assigned_to: content-writer
+    verified_by: verifier
+    verify_prompt: 'Verificar JSON válido, contenido en español, comandos funcionales.'
+    timeout_ms: 900000
+  
+  - id: article-troubleshooting-ssh
+    title: 'Artículo: SSH no conecta'
+    prompt: |
+      Crea C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\content\linux\troubleshooting-ssh.json
+      
+      TEMA: SSH no conecta - Guía de soluciones
+      
+      CONTENIDO:
+      1. Debug básico:
+         - ssh -v usuario@host (verbose)
+         - ssh -vvv (muy verbose, para problemas difíciles)
+      
+      2. El servicio está corriendo?
+         - systemctl status sshd
+         - systemctl restart sshd
+      
+      3. Puerto y firewall:
+         - ss -tlnp | grep 22
+         - iptables -L -n | grep 22
+      
+      4. Permisos:
+         - chmod 700 ~/.ssh
+         - chmod 600 ~/.ssh/authorized_keys
+         - chmod 600 ~/.ssh/id_rsa
+      
+      5. Errores comunes:
+         - "Connection refused" → servicio caído o puerto diferente
+         - "Permission denied" → clave incorrecta o permisos mal
+         - "Connection timed out" → firewall o red
+         - "Host key verification failed" → ~/.ssh/known_hosts
+      
+      6. Reset:
+         - rm ~/.ssh/known_hosts
+         - ssh-keygen -R hostname
+    assigned_to: content-writer
+    verified_by: verifier
+    verify_prompt: 'Verificar JSON válido, contenido en español, comandos funcionales.'
+    timeout_ms: 900000
+  
+  - id: integrate-landing
+    title: 'Integrar landing page en App.tsx'
+    prompt: |
+      Modifica C:\Users\Tirso\.minimax-agent\projects\sysops-wiki\src\App.tsx para:
+      
+      1. Importar el componente Landing
+      2. Mostrar Landing como vista inicial (home)
+      3. Los CTAs de la landing deben navegar a la vista de artículos filtrada por categoría
+      4. Cuando el usuario hace click en "Explorar Linux" → mostrar artículos de Linux
+      5. Cuando hace click en "Explorar Virtualización" → mostrar artículos de Virtualización
+      6. La búsqueda debe seguir funcionando
+      
+      IMPORTANTE: Mantener toda la funcionalidad existente (sidebar, navbar, footer, ArticleViewer, etc.)
+    assigned_to: frontend-dev
+    depends_on: [landing-page]
+    verified_by: verifier
+    verify_prompt: 'Verificar que la landing se muestra como home, los CTAs funcionan, la navegación es correcta y el build pasa.'
+    timeout_ms: 900000
