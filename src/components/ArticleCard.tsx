@@ -8,6 +8,7 @@ export interface Article {
   tags: string[];
   date?: string;
   readTime?: string;
+  contentText?: string; // Full text content for search
 }
 
 export interface ArticleCardProps {

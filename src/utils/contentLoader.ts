@@ -54,6 +54,12 @@ const mapJsonToArticle = (json: ArticleContent): Article => {
   const totalChars = json.contenido.reduce((sum, block) => sum + block.valor.length, 0);
   const readTime = Math.max(1, Math.ceil(totalChars / 1500));
   
+  // Extract full text content for search
+  const contentText = json.contenido
+    .map(block => block.valor)
+    .join(' ')
+    .toLowerCase();
+  
   return {
     id: json.id,
     title: json.titulo,
@@ -62,6 +68,7 @@ const mapJsonToArticle = (json: ArticleContent): Article => {
     tags: getTagsForArticle(json.id),
     date: undefined,
     readTime: `${readTime} min`,
+    contentText,
   };
 };
 

@@ -19,42 +19,42 @@ export interface SidebarProps {
 
 const defaultCategories: Category[] = [
   {
-    id: 'linux',
+    id: 'Linux',
     name: 'Linux',
     icon: 'terminal',
     color: '#6b7280',
     subcategories: ['Comandos', 'Scripting', 'systemd', 'Permisos', 'Networking'],
   },
   {
-    id: 'virtualization',
+    id: 'Virtualización',
     name: 'Virtualización',
     icon: 'server',
     color: '#3b82f6',
     subcategories: ['Docker', 'Kubernetes', 'VMware', 'Proxmox', 'QEMU'],
   },
   {
-    id: 'networking',
+    id: 'Redes',
     name: 'Redes',
     icon: 'network',
     color: '#8b5cf6',
     subcategories: ['TCP/IP', 'Firewall', 'DNS', 'VPN', 'Monitoring'],
   },
   {
-    id: 'security',
+    id: 'Seguridad',
     name: 'Seguridad',
     icon: 'shield',
     color: '#ef4444',
     subcategories: ['SSL/TLS', 'SSH', 'Hardening', 'Audit', 'Fail2ban'],
   },
   {
-    id: 'databases',
+    id: 'Bases de Datos',
     name: 'Bases de Datos',
     icon: 'database',
     color: '#f59e0b',
     subcategories: ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Backup'],
   },
   {
-    id: 'cloud',
+    id: 'Cloud',
     name: 'Cloud',
     icon: 'cloud',
     color: '#06b6d4',

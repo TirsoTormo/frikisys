@@ -18,7 +18,7 @@ function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>('linux');
+  const [activeCategory, setActiveCategory] = useState<string>('Linux');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAISkills, setShowAISkills] = useState(false);
   const [legalPage, setLegalPage] = useState<LegalPage>(null);
@@ -34,7 +34,11 @@ function App() {
 
   // Handle landing navigation - CTA buttons
   const handleNavigateToSection = (category: string) => {
-    setActiveCategory(category);
+    const categoryMap: Record<string, string> = {
+      linux: 'Linux',
+      virtualizacion: 'Virtualización',
+    };
+    setActiveCategory(categoryMap[category] || category);
     setShowLanding(false); // Hide landing, show article grid
     setCurrentView('home');
   };
@@ -56,8 +60,7 @@ function App() {
     
     // Filter by category if not searching
     if (!searchQuery && activeCategory) {
-      const categoryName = activeCategory === 'linux' ? 'Linux' : 'Virtualización';
-      articles = articles.filter(a => a.category === categoryName);
+      articles = articles.filter(a => a.category === activeCategory);
     }
     
     // Filter by search query
@@ -66,7 +69,8 @@ function App() {
       articles = allArticleCards.filter(a =>
         a.title.toLowerCase().includes(query) ||
         a.description.toLowerCase().includes(query) ||
-        a.tags.some(tag => tag.toLowerCase().includes(query))
+        a.tags.some(tag => tag.toLowerCase().includes(query)) ||
+        (a.contentText && a.contentText.includes(query))
       );
     }
     

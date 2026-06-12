@@ -17,9 +17,9 @@ const Footer: React.FC<FooterProps> = ({ version = '0.1.0', onLinkClick, onShowA
       { label: 'Cheatsheets', href: '#' },
     ],
     comunidad: [
-      { label: 'GitHub', href: '#', icon: '💻' },
+      { label: 'GitHub', href: 'https://github.com/TirsoTormo/frikisys', icon: '💻', external: true },
       { label: 'Discord', href: '#', icon: '💬' },
-      { label: 'Contribuir', href: '#', icon: '🤝' },
+      { label: 'Contribuir', href: 'https://github.com/TirsoTormo/frikisys/blob/main/README.md#contribuir', icon: '🤝', external: true },
     ],
     legal: [
       { label: 'Licencia MIT', href: '#', icon: '📜' },
@@ -105,14 +105,16 @@ const Footer: React.FC<FooterProps> = ({ version = '0.1.0', onLinkClick, onShowA
             <ul className="space-y-2">
               {links.comunidad.map((link) => (
                 <li key={link.label}>
-                  <button
-                    onClick={() => onLinkClick?.(link.label)}
-                    className="font-mono text-xs text-text-muted hover:text-accent transition-colors flex items-center gap-2 group"
+                  <a
+                    href={link.href}
+                    target={link.external ? '_blank' : undefined}
+                    rel={link.external ? 'noopener noreferrer' : undefined}
+                    className="font-mono text-xs text-text-muted hover:text-accent transition-colors flex items-center gap-2 group no-underline"
                   >
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity">›</span>
                     <span>{link.icon}</span>
                     {link.label}
-                  </button>
+                  </a>
                 </li>
               ))}
             </ul>
