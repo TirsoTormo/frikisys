@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Analytics } from "@vercel/analytics/react"
+import { Helmet } from 'react-helmet-async';
 import { Navbar, Sidebar, ArticleGrid, ArticleViewer, Footer } from './components';
 import { Article, CodeBlock } from './components';
 import Landing from './components/Landing';
@@ -160,8 +161,71 @@ function App() {
     };
   };
 
+  // Get dynamic page title and meta
+  const getPageMeta = (): { title: string; desc: string; canonical: string; ogType: string; articleData: ArticleContent | null } => {
+    const BASE_URL = 'https://frikisys.vercel.app';
+    const BASE_TITLE = 'Frikisys - Wiki SysAdmin & SysOps en Español';
+    const BASE_DESC = 'Wiki de SysAdmin y SysOps en español. Comandos, tutoriales y guías prácticas para administradores de sistemas Linux y virtualización.';
+
+    if (currentView === 'article' && selectedArticleId) {
+      const articleData = getArticleById(selectedArticleId);
+      if (articleData) {
+        const title = `${articleData.titulo} | Frikisys`;
+        const desc = articleData.descripcion;
+        const canonical = `${BASE_URL}/articulo/${selectedArticleId}`;
+        return { title, desc, canonical, ogType: 'article', articleData };
+      }
+    }
+    if (activeTag) {
+      return { title: `#${activeTag} | Frikisys`, desc: `Artículos sobre ${activeTag}`, canonical: `${BASE_URL}/tag/${activeTag}`, ogType: 'website', articleData: null };
+    }
+    if (currentView === 'legal') {
+      const titles: Record<string, string> = { licencia: 'Licencia MIT', privacidad: 'Política de Privacidad', terminos: 'Términos de Servicio' };
+      return { title: `${titles[legalPage!] || 'Legal'} | Frikisys`, desc: BASE_DESC, canonical: `${BASE_URL}/legal/${legalPage}`, ogType: 'website', articleData: null };
+    }
+    return { title: BASE_TITLE, desc: BASE_DESC, canonical: BASE_URL, ogType: 'website', articleData: null };
+  };
+
+  const meta = getPageMeta();
+
+  // JSON-LD for articles
+  const jsonLd = meta.articleData ? {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: meta.articleData.titulo,
+    description: meta.articleData.descripcion,
+    author: { '@type': 'Person', name: 'TirsoTormo' },
+    datePublished: '2024-01-01',
+    publisher: { '@type': 'Organization', name: 'Frikisys', url: 'https://frikisys.vercel.app' },
+    about: { '@type': 'Thing', name: categoryDisplayNames[meta.articleData.categoria] || meta.articleData.categoria },
+  } : {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Frikisys',
+    url: 'https://frikisys.vercel.app',
+    description: 'Wiki de SysAdmin y SysOps en español',
+    author: { '@type': 'Person', name: 'TirsoTormo' },
+  };
+
   return (
     <div className="min-h-screen bg-base-bg flex flex-col">
+      {/* SEO Meta Tags */}
+      <Helmet>
+        <title>{meta.title}</title>
+        <meta name="description" content={meta.desc} />
+        <link rel="canonical" href={meta.canonical} />
+        <meta property="og:title" content={meta.title} />
+        <meta property="og:description" content={meta.desc} />
+        <meta property="og:type" content={meta.ogType} />
+        <meta property="og:url" content={meta.canonical} />
+        <meta property="og:image" content="https://frikisys.vercel.app/og-image.png" />
+        <meta property="og:site_name" content="Frikisys" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={meta.title} />
+        <meta name="twitter:description" content={meta.desc} />
+        <meta name="twitter:image" content="https://frikisys.vercel.app/og-image.png" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       {/* Navbar */}
       <Navbar onSearch={handleSearch} onLogoClick={handleLogoClick} />
 
