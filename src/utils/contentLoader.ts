@@ -111,7 +111,7 @@ const mapJsonToArticle = (json: ArticleContent): Article => {
 };
 
 // Get tags based on article ID
-const getTagsForArticle = (id: string): string[] => {
+export const getTagsForArticle = (id: string): string[] => {
   const tagMap: Record<string, string[]> = {
     'intro-linux': ['linux', 'fundamentos', 'sysadmin'],
     'comandos-basicos': ['comandos', 'bash', 'terminal'],

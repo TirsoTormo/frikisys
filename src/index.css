@@ -269,62 +269,67 @@ button, a, [role="button"] {
   cursor: pointer;
 }
 
-/* Article typography */
+/* Article typography - optimized for readability */
 .article-content h1 {
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  color: var(--text-primary);
+  color: #e5e5e5;
   border-bottom: 2px solid var(--border);
   padding-bottom: 0.75rem;
 }
 
 .article-content h2 {
   font-size: 1.25rem;
-  font-weight: 600;
-  margin-top: 2rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
   margin-bottom: 1rem;
-  color: var(--text-primary);
+  color: #ffffff;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.75rem;
 }
 
 .article-content h3 {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   margin-bottom: 0.75rem;
-  color: var(--text-secondary);
+  color: #d1d5db;
 }
 
 .article-content p {
   margin-bottom: 1rem;
-  color: var(--text-secondary);
+  color: #d1d5db;
+  line-height: 1.75;
+  font-size: 0.95rem;
 }
 
 .article-content ul, .article-content ol {
   margin-bottom: 1rem;
   padding-left: 1.5rem;
-  color: var(--text-secondary);
+  color: #d1d5db;
 }
 
 .article-content li {
   margin-bottom: 0.5rem;
+  line-height: 1.6;
 }
 
 .article-content strong {
-  color: var(--text-primary);
+  color: #ffffff;
   font-weight: 600;
 }
 
 .article-content code:not(.code-block code):not(.inline-code) {
-  background-color: var(--bg-card);
+  background-color: #252525;
   padding: 2px 6px;
   border-radius: 2px;
   font-size: 0.875em;
-  color: var(--accent);
+  color: #22c55e;
 }
 
 .article-content .inline-code {
-  background-color: var(--bg-card);
+  background-color: #252525;
   padding: 2px 6px;
   border-radius: 2px;
   font-size: 0.875em;
@@ -332,14 +337,14 @@ button, a, [role="button"] {
 }
 
 .article-content .code-fence {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 2px;
+  background-color: #111111;
+  border: 1px solid #333333;
+  border-radius: 4px;
   padding: 16px;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
   overflow-x: auto;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
   position: relative;
 }
 
@@ -354,6 +359,19 @@ button, a, [role="button"] {
 }
 
 .article-content .code-fence code {
-  color: var(--text-primary);
+  color: #e5e5e5;
   font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.article-content a {
+  color: #6b7280;
+  text-decoration: underline;
+  text-decoration-color: #404040;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+
+.article-content a:hover {
+  color: #9ca3af;
 }

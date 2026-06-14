@@ -16,46 +16,80 @@ export const escapeHtml = (text: string): string => {
 };
 
 const parseMarkdown = (md: string): string => {
-  let html = md;
-  
-  // Fenced code blocks first (```bash ... ```)
-  html = html.replace(/```(\w+)?\n([\s\S]*?)```/gim, (_, lang, code) => {
-    const language = lang || 'bash';
-    return `<pre class="code-fence"><code class="language-${language}">${escapeHtml(code.trim())}</code></pre>`;
-  });
-  
-  // Headers (before line breaks to avoid conflicts)
-  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-  
-  // Lists
-  html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
-  
-  // Bold and italic
-  html = html.replace(/\*\*\*(.*?)\*\*\*/gim, '<strong><em>$1</em></strong>');
-  html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
-  html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
-  
-  // Inline code
-  html = html.replace(/`([^`]+)`/gim, '<code class="inline-code">$1</code>');
-  
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-  
-  // Paragraphs - wrap non-tag content
-  const lines = html.split('\n\n');
-  html = lines.map(line => {
-    line = line.trim();
-    if (!line) return '';
-    if (line.startsWith('<h') || line.startsWith('<pre') || line.startsWith('<ul') || line.startsWith('<ol')) {
-      return line;
+  // Process line by line to avoid block-level elements getting wrapped in <p>
+  const lines = md.split('\n');
+  const result: string[] = [];
+  let inCodeBlock = false;
+  let codeBuffer: string[] = [];
+  let codeLang = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Fenced code block handling
+    if (line.startsWith('```')) {
+      if (!inCodeBlock) {
+        // Start code block
+        inCodeBlock = true;
+        codeLang = line.slice(3).trim() || 'bash';
+        codeBuffer = [];
+      } else {
+        // End code block
+        inCodeBlock = false;
+        const lang = codeLang || 'bash';
+        const code = codeBuffer.join('\n');
+        result.push(`<pre class="code-fence" data-lang="${lang}"><code class="language-${lang}">${escapeHtml(code.trim())}</code></pre>`);
+        codeBuffer = [];
+      }
+      continue;
     }
-    return `<p>${line.replace(/\n/g, '<br/>')}</p>`;
-  }).join('\n');
-  
-  return html;
+
+    if (inCodeBlock) {
+      codeBuffer.push(line);
+      continue;
+    }
+
+    // Skip empty lines
+    if (!line.trim()) {
+      result.push('');
+      continue;
+    }
+
+    // Headers (## = h2, ### = h3)
+    if (line.startsWith('#### ')) {
+      result.push(`<h4>${escapeHtml(line.slice(5))}</h4>`);
+    } else if (line.startsWith('### ')) {
+      result.push(`<h3>${escapeHtml(line.slice(4))}</h3>`);
+    } else if (line.startsWith('## ')) {
+      result.push(`<h2>${escapeHtml(line.slice(3))}</h2>`);
+    } else if (line.startsWith('# ')) {
+      result.push(`<h1>${escapeHtml(line.slice(2))}</h1>`);
+    }
+    // List items
+    else if (line.startsWith('- ') || line.startsWith('* ')) {
+      result.push(`<li>${escapeHtml(line.slice(2))}</li>`);
+    }
+    // Paragraph text
+    else {
+      // Apply inline formatting to paragraph text
+      let processed = line;
+      // Bold + italic
+      processed = processed.replace(/\*\*\*(.*?)\*\*\*/gim, '<strong><em>$1</em></strong>');
+      // Bold
+      processed = processed.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+      // Italic
+      processed = processed.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+      // Inline code
+      processed = processed.replace(/`([^`]+)`/gim, '<code class="inline-code">$1</code>');
+      // Links
+      processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      result.push(`<p>${processed}</p>`);
+    }
+  }
+
+  // Wrap consecutive <li> items in <ul>
+  const html = result.join('\n');
+  return html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
 };
 
 export interface ArticleViewerProps {
@@ -68,6 +102,7 @@ export interface ArticleViewerProps {
   author?: string;
   onBack?: () => void;
   onRelatedArticleClick?: (articleId: string) => void;
+  onTagClick?: (tag: string) => void;
 }
 
 const ArticleViewer: React.FC<ArticleViewerProps> = ({
@@ -80,6 +115,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({
   author = 'Frikisys Team',
   onBack,
   onRelatedArticleClick,
+  onTagClick,
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -159,7 +195,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({
               <span
                 key={tag}
                 className="px-2 py-1 bg-base-card border border-base-border rounded font-mono text-xs text-text-secondary hover:border-accent transition-colors cursor-pointer"
-                onClick={() => console.log(`Tag: ${tag}`)}
+                onClick={() => onTagClick?.(tag)}
               >
                 #{tag}
               </span>

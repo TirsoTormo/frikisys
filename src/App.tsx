@@ -8,11 +8,22 @@ import {
   getArticleById, 
   contentToMarkdown,
   contentToCodeBlocks,
+  getTagsForArticle,
   ArticleContent 
 } from './utils/contentLoader';
 
-type View = 'home' | 'article' | 'legal';
+type View = 'home' | 'article' | 'legal' | 'tag';
 type LegalPage = 'licencia' | 'privacidad' | 'terminos' | null;
+
+// Category display names mapping
+const categoryDisplayNames: Record<string, string> = {
+  linux: 'Linux',
+  virtualizacion: 'Virtualización',
+  redes: 'Redes',
+  seguridad: 'Seguridad',
+  'bases-de-datos': 'Bases de Datos',
+  cloud: 'Cloud',
+};
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -23,6 +34,7 @@ function App() {
   const [showAISkills, setShowAISkills] = useState(false);
   const [legalPage, setLegalPage] = useState<LegalPage>(null);
   const [showLanding, setShowLanding] = useState(true); // Track if landing is shown
+  const [activeTag, setActiveTag] = useState<string | null>(null); // Track active tag filter
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   // Scroll to top when view changes
@@ -106,6 +118,18 @@ function App() {
     setActiveCategory(categoryId);
     setShowLanding(false); // Hide landing when selecting category from sidebar
     setSearchQuery(''); // Clear search to ensure filtering works
+    setActiveTag(null); // Clear tag filter
+  };
+
+  const handleTagClick = (tag: string) => {
+    setActiveTag(tag);
+    setCurrentView('tag');
+    setShowLanding(false);
+  };
+
+  const handleBackFromTag = () => {
+    setActiveTag(null);
+    setCurrentView('home');
   };
 
   const handleLegalClick = (section: string) => {
@@ -246,6 +270,34 @@ function App() {
                 columns={3}
               />
             )
+          ) : currentView === 'tag' ? (
+            <>
+              {/* Tag filter view */}
+              <div className="mb-8">
+                <button
+                  onClick={handleBackFromTag}
+                  className="flex items-center gap-2 mb-4 text-text-secondary hover:text-text-primary transition-colors group"
+                >
+                  <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="square" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  <span className="font-mono text-sm">Volver</span>
+                </button>
+                <div className="pixel-separator mb-4">
+                  <h1 className="font-mono text-2xl md:text-3xl font-bold text-text-primary px-4">
+                    Artículos con #{activeTag}
+                  </h1>
+                </div>
+                <p className="font-mono text-sm text-text-secondary">
+                  {allArticleCards.filter(a => a.tags.includes(activeTag!)).length} artículo(s) encontrado(s)
+                </p>
+              </div>
+              <ArticleGrid
+                articles={allArticleCards.filter(a => a.tags.includes(activeTag!))}
+                onArticleClick={handleArticleClick}
+                columns={3}
+              />
+            </>
           ) : currentView === 'legal' ? (
             <>
               {/* Legal Pages */}
@@ -359,14 +411,12 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.`}
                 return (
                   <ArticleViewer
                     title={content.article.titulo}
-                    category={content.article.categoria === 'linux' ? 'Linux' : 'Virtualización'}
+                    category={categoryDisplayNames[content.article.categoria] || content.article.categoria}
                     content={content.markdown}
                     codeBlocks={content.codeBlocks}
-                    tags={content.article.contenido
-                      .filter(b => b.tipo === 'comando')
-                      .slice(0, 5)
-                      .map((_, i) => `tema-${i + 1}`)}
+                    tags={getTagsForArticle(content.article.id)}
                     onBack={handleBackToHome}
+                    onTagClick={handleTagClick}
                   />
                 );
               })()}
