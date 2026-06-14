@@ -1,0 +1,27 @@
+{
+  "id": "vpn-wireguard",
+  "titulo": "VPN con WireGuard - Rápido y Seguro",
+  "categoria": "redes",
+  "descripcion": "Instala y configura WireGuard para crear redes privadas virtuales rápidas y modernas. Guía paso a paso con ejemplos.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Por qué WireGuard" },
+    { "tipo": "texto", "valor": "WireGuard es el protocolo VPN moderno. Más rápido que OpenVPN e IPsec, código más simple y auditado, y usa criptografía de última generación. Ideal para conectar servidores, acceder a tu red desde cualquier lugar, o proteger tráfico en WiFis públicos." },
+    { "tipo": "titulo", "valor": "Instalación" },
+    { "tipo": "comando", "valor": "# Debian/Ubuntu\napt install wireguard\n\n# CentOS 8+\ndnf install epel-release\ndnf install wireguard-tools\n\n# Verificar que el módulo está cargado\nlsmod | grep wireguard" },
+    { "tipo": "titulo", "valor": "Generar claves" },
+    { "tipo": "comando", "valor": "# Generar par de claves para el servidor\ncd /etc/wireguard\nwg genkey | tee server_private.key | wg pubkey > server_public.key\n\n# Generar par de claves para el cliente\nwg genkey | tee client_private.key | wg pubkey > client_public.key\n\n# Proteger las claves privadas\nchmod 600 server_private.key client_private.key\n\n# Mostrar claves (necesitarás la pública del cliente y la privada del servidor)\ncat server_private.key\ncat server_public.key" },
+    { "tipo": "titulo", "valor": "Configurar el servidor" },
+    { "tipo": "comando", "valor": "# /etc/wireguard/wg0.conf (servidor)\n[Interface]\nAddress = 10.0.0.1/24\nListenPort = 51820\nPrivateKey = <SERVER_PRIVATE_KEY>\nPostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\nPostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\n\n# Peer: cliente 1\n[Peer]\nPublicKey = <CLIENT_PUBLIC_KEY>\nAllowedIPs = 10.0.0.2/32" },
+    { "tipo": "titulo", "valor": "Configurar el cliente" },
+    { "tipo": "comando", "valor": "# /etc/wireguard/wg0.conf (cliente)\n[Interface]\nAddress = 10.0.0.2/24\nPrivateKey = <CLIENT_PRIVATE_KEY>\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = <SERVER_PUBLIC_KEY>\nEndpoint = tu-dominio-o-ip.com:51820\nAllowedIPs = 0.0.0.0/0  # Todo el tráfico por VPN\nPersistentKeepalive = 25" },
+    { "tipo": "titulo", "valor": "Activar IP forwarding y firewall" },
+    { "tipo": "comando", "valor": "# Activar forwarding (hacerlo permanente en /etc/sysctl.conf)\necho net.ipv4.ip_forward=1 >> /etc/sysctl.conf\nsysctl -p\n\n# Permitir tráfico WireGuard en el firewall\niptables -A INPUT -p udp --dport 51820 -j ACCEPT\n# O con ufw:\nufw allow 51820/udp" },
+    { "tipo": "titulo", "valor": "Activar el servicio" },
+    { "tipo": "comando", "valor": "# Activar y arrancar\nsystemctl enable wg-quick@wg0\nsystemctl start wg-quick@wg0\n\n# Ver estado\nwg show\n\n# Ver interfaces\nip link show wg0\nip addr show wg0" },
+    { "tipo": "titulo", "valor": "Añadir más clientes" },
+    { "tipo": "comando", "valor": "# Generar claves para el nuevo cliente (en el cliente)\nwg genkey | tee client2_private.key | wg pubkey > client2_public.key\n\n# Añadir el peer al servidor (sin reiniciar)\nwg set wg0 peer <CLIENT2_PUBLIC_KEY> allowed-ips 10.0.0.3/32\n\n# Guardar la configuración permanentemente\nwg-quick save wg0" },
+    { "tipo": "titulo", "valor": "Cliente móvil (Android/iOS)" },
+    { "tipo": "texto", "valor": "Instala la app WireGuard, importa el archivo de configuración del cliente (wg0.conf), y escanea el código QR si lo generas." },
+    { "tipo": "comando", "valor": "# Generar código QR para configurar en el móvil\nqrencode -t ansiutf8 < /etc/wireguard/wg0.conf\n\n# O generar archivo para exportar\ncat /etc/wireguard/wg0.conf" }
+  ]
+}

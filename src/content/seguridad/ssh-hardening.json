@@ -1,0 +1,21 @@
+{
+  "id": "ssh-hardening",
+  "titulo": "Hardening SSH - Seguridad Avanzada",
+  "categoria": "seguridad",
+  "descripcion": "Endurece tu servidor SSH. Autenticación por claves, fail2ban, puertos personalizados y mejores prácticas.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Autenticación por claves SSH" },
+    { "tipo": "texto", "valor": "La autenticación por contraseña es vulnerable a ataques de fuerza bruta. Las claves SSH usan criptografía asimétrica (RSA 4096 o Ed25519) y son prácticamente imposibles de crackear." },
+    { "tipo": "comando", "valor": "# Generar clave Ed25519 (recomendada)\nssh-keygen -t ed25519 -C \"tu-email@servidor.com\"\n\n# Generar clave RSA 4096 (compatible con sistemas antiguos)\nssh-keygen -t rsa -b 4096 -C \"tu-email@servidor.com\"\n\n# Copiar la clave al servidor\nssh-copy-id usuario@tu-servidor.com\n\n# O manualmente:\ncat ~/.ssh/id_ed25519.pub | ssh usuario@servidor 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys'" },
+    { "tipo": "titulo", "valor": "Configurar sshd con hardenizado" },
+    { "tipo": "comando", "valor": "# /etc/ssh/sshd_config\n\n# Puerto no estándar (reduce escaneos automáticos)\nPort 2222\n\n# Solo protocolo 2\nProtocol 2\n\n# No permitir root login\nPermitRootLogin no\n\n# Solo autenticación por clave\nPasswordAuthentication no\nChallengeResponseAuthentication no\n\n# Desactivar empty passwords\nPermitEmptyPasswords no\n\n# Máximo de intentos\nMaxAuthTries 3\n\n# Sesiones inactivas (desconectar)\nClientAliveInterval 300\nClientAliveCountMax 2\n\n# Limitar usuarios que pueden conectar\nAllowUsers admin deploy\n\n# Banner de advertencia\nBanner /etc/ssh/banner" },
+    { "tipo": "titulo", "valor": "Instalar y configurar fail2ban" },
+    { "tipo": "comando", "valor": "# Instalar\napt install fail2ban\n\n# Configurar\ncp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local\n\n# Editar /etc/fail2ban/jail.local\n[DEFAULT]\nbantime = 3600           # 1 hora de ban\nfindtime = 600           # en 10 minutos\nmaxretry = 3             # 3 intentos\n\n[sshd]\nenabled = true\nport = 2222             # puerto SSH personalizado\nfilter = sshd\nlogpath = /var/log/auth.log\nmaxretry = 3\n\n# Reiniciar\nsystemctl restart fail2ban\nsystemctl enable fail2ban\n\n# Ver estado\nfail2ban-client status\nfail2ban-client status sshd" },
+    { "tipo": "titulo", "valor": "Verificar configuración SSH" },
+    { "tipo": "comando", "valor": "# Validar la configuración antes de reiniciar\nsshd -t\n\n# Si hay errores, te los muestra sin aplicar cambios\n# Solo reinicia sshd si la validación pasa\n\n# Probar conexión desde otra terminal antes de cerrar la sesión actual\nssh -p 2222 usuario@servidor\n\n# En caso de bloqueo, aún tienes la sesión activa para arreglarlo" },
+    { "tipo": "titulo", "valor": "Usar SSH config para simplificar conexiones" },
+    { "tipo": "comando", "valor": "# ~/.ssh/config\nHost servidor-prod\n    HostName tu-servidor.com\n    User deploy\n    Port 2222\n    IdentityFile ~/.ssh/id_ed25519\n    ServerAliveInterval 60\n    ServerAliveCountMax 3\n\nHost servidor-backup\n    HostName 192.168.1.50\n    User admin\n    Port 2222\n    IdentityFile ~/.ssh/id_ed25519\n\n# Ahora conectar con:\nssh servidor-prod" },
+    { "tipo": "titulo", "valor": "Restringir acceso por IP (opcional)" },
+    { "tipo": "comando", "valor": "# Solo permitir SSH desde IPs específicas (en /etc/hosts.deny y /etc/hosts.allow)\n# /etc/hosts.deny\nsshd: ALL\n\n# /etc/hosts.allow\nsshd: 192.168.1.0/24 10.0.0.0/8\n\n# O con iptables\niptables -A INPUT -p tcp --dport 2222 -s 192.168.1.0/24 -j ACCEPT\niptables -A INPUT -p tcp --dport 2222 -j DROP" }
+  ]
+}

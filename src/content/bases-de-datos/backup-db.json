@@ -1,0 +1,22 @@
+{
+  "id": "backup-db",
+  "titulo": "Estrategia de Backup para Bases de Datos",
+  "categoria": "Bases de Datos",
+  "descripcion": "Crea una estrategia de backup robusta: dumps, replicación, snapshots y pruebas de restauración.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Los tres tipos de backup" },
+    { "tipo": "texto", "valor": "Ningún backup es suficiente por sí solo. La estrategia completa combina tres tipos: completo (todo), incremental (cambios desde último backup) y diferencial (cambios desde último completo). Esto define el RPO (Recovery Point Objective)." },
+    { "tipo": "titulo", "valor": "Backup completo automatizado (PostgreSQL)" },
+    { "tipo": "comando", "valor": "# Script: /opt/scripts/backup-postgres.sh\n#!/bin/bash\nDATE=$(date +%Y%m%d_%H%M%S)\nBACKUP_DIR=/backups/postgres\nDB_NAME=mitienda\nDB_USER=postgres\n\nmkdir -p $BACKUP_DIR\n\n# Dump con compresión\npg_dump -U $DB_USER -d $DB_NAME | gzip > $BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz\n\n# Mantener solo los últimos 7 backups\necho \"Limpiando backups antiguos...\"\nls -t $BACKUP_DIR/${DB_NAME}_*.sql.gz | tail -n +8 | xargs -r rm\n\necho \"Backup completado: $BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz\"\n\n# Crontab: cada día a las 3am\n# 0 3 * * * /opt/scripts/backup-postgres.sh >> /var/log/backup.log 2>&1" },
+    { "tipo": "titulo", "valor": "Backup completo automatizado (MySQL/MariaDB)" },
+    { "tipo": "comando", "valor": "# Script: /opt/scripts/backup-mysql.sh\n#!/bin/bash\nDATE=$(date +%Y%m%d_%H%M%S)\nBACKUP_DIR=/backups/mysql\nDB_NAME=mitienda\nDB_USER=root\n\nmkdir -p $BACKUP_DIR\n\nmysqldump -u $DB_USER --single-transaction --routines --triggers $DB_NAME | gzip > $BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz\n\n# Mantener últimos 14 backups\nls -t $BACKUP_DIR/${DB_NAME}_*.sql.gz | tail -n +15 | xargs -r rm\n\necho \"Backup completado: $BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz\"" },
+    { "tipo": "titulo", "valor": "Replicación para alta disponibilidad" },
+    { "tipo": "texto", "valor": "La replicación permite tener una copia en tiempo real de la base de datos en otro servidor. Si el principal falla, el secundario toma el control. Es la mejor protección contra fallos de hardware." },
+    { "tipo": "comando", "valor": "# PostgreSQL: replicación streaming\n# En el primario (/var/lib/postgresql/data/postgresql.conf):\nwal_level = replica\nmax_wal_senders = 3\nhot_standby = on\n\n# En pg_hba.conf del primario:\nhost replication all 10.0.0.2/32 scram-sha-256\n\n# En el secundario:\npg_basebackup -h 10.0.0.1 -U replication -D /var/lib/postgresql/data -R -P\n\nsystemctl restart postgresql" },
+    { "tipo": "titulo", "valor": "Snapshot con LVM (nivel de sistema)" },
+    { "tipo": "comando", "valor": "# Crear snapshot antes de operaciones de riesgo\n# Asume que /var/lib/mysql está en un volumen LVM llamado vg_data\n\n# Crear snapshot\nlvcreate --size 5G --snapshot --name mysql-snap /dev/vg_data/lv_mysql\n\n# Hacer backup desde el snapshot\nmount /dev/vg_data/mysql-snap /mnt/snap\ntar czf /backups/mysql_snap_$(date +%Y%m%d).tar.gz -C /mnt/snap .\n\n# Desmontar y eliminar snapshot\numount /mnt/snap\nlvremove /dev/vg_data/mysql-snap" },
+    { "tipo": "titulo", "valor": "La regla más importante: probar los backups" },
+    { "tipo": "texto", "valor": "Un backup que nunca se prueba es un backup que很可能 no funciona. Programa pruebas de restauración mensuales como si fuera una emergencia real. Solo así sabrás cuánto tiempo tarda realmente la recuperación." },
+    { "tipo": "comando", "valor": "# Script de prueba de restauración (ejecutar en entorno de staging)\n#!/bin/bash\nSTAGING_DB=mitienda_test\nBACKUP_FILE=$(ls -t /backups/postgres/*.sql.gz | head -1)\n\necho \"Restaurando desde: $BACKUP_FILE\"\ndropdb -U postgres $STAGING_DB\ncreatedb -U postgres $STAGING_DB\ngunzip -c $BACKUP_FILE | psql -U postgres $STAGING_DB\n\n# Verificar datos\ngunzip -c $BACKUP_FILE | psql -U postgres $STAGING_DB -c \"SELECT COUNT(*) FROM productos;\"\n\necho \"Restauración exitosa: $STAGING_DB\"\necho \"Tiempo total: $SECONDS segundos\"  " }
+  ]
+}

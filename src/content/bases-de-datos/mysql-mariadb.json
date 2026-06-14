@@ -1,0 +1,22 @@
+{
+  "id": "mysql-mariadb",
+  "titulo": "MySQL y MariaDB - Administración",
+  "categoria": "Bases de Datos",
+  "descripcion": "Administra bases de datos MySQL/MariaDB. Usuario root, permisos, backups y optimización de consultas.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Instalar MariaDB (reemplazo de MySQL)" },
+    { "tipo": "comando", "valor": "# Instalar MariaDB (recomendado sobre MySQL por licencia)\napt install mariadb-server mariadb-client\n\n# MySQL oficial\napt install mysql-server\n\n# Ejecutar hardening inicial\nmysql_secure_installation\n\n# Iniciar\nsystemctl enable mariadb\nsystemctl start mariadb" },
+    { "tipo": "titulo", "valor": "Conectar y primeros comandos" },
+    { "tipo": "comando", "valor": "# Conectar\nmysql -u root\n\n# Comandos en mysql CLI\nSHOW DATABASES;\nUSE nombre_db;\nSHOW TABLES;\nDESCRIBE nombre_tabla;\n\n# Ver usuarios\nSELECT user, host FROM mysql.user;" },
+    { "tipo": "titulo", "valor": "Crear usuarios y permisos" },
+    { "tipo": "comando", "valor": "-- Crear usuario con permisos específicos\nCREATE USER 'miapp'@'localhost' IDENTIFIED BY 'ContraseñaSegura123';\nCREATE USER 'miapp'@'%' IDENTIFIED BY 'ContraseñaSegura123';\n\n-- Dar permisos sobre una base de datos\nGRANT ALL PRIVILEGES ON mitienda.* TO 'miapp'@'localhost';\nGRANT ALL PRIVILEGES ON mitienda.* TO 'miapp'@'%';\n\n-- Dar permisos de solo lectura\nGRANT SELECT ON mitienda.* TO 'lector'@'localhost' IDENTIFIED BY 'lectorpass';\n\n-- Aplicar cambios\nFLUSH PRIVILEGES;\n\n-- Revocar permisos\nREVOKE DELETE ON mitienda.* FROM 'miapp'@'localhost';\n\n-- Eliminar usuario\nDROP USER 'miapp'@'localhost';" },
+    { "tipo": "titulo", "valor": "Operaciones CRUD básicas" },
+    { "tipo": "comando", "valor": "-- Insertar\nINSERT INTO productos (nombre, precio, stock) VALUES ('Tablet', 399.99, 20);\nINSERT INTO productos (nombre, precio, stock) VALUES\n    ('Monitor 27\"', 249.00, 12),\n    ('Ratón Inalámbrico', 29.99, 55);\n\n-- Leer\nSELECT * FROM productos WHERE stock > 0 ORDER BY precio;\nSELECT nombre, precio FROM productos WHERE categoria = 'Electrónica';\n\n-- Actualizar\nUPDATE productos SET stock = stock - 1 WHERE id = 3;\nUPDATE productos SET precio = precio * 0.9 WHERE stock > 50;\n\n-- Eliminar\nDELETE FROM productos WHERE id = 10;\nDELETE FROM productos WHERE stock = 0 AND precio < 10;" },
+    { "tipo": "titulo", "valor": "Backups" },
+    { "tipo": "comando", "valor": "# Backup de una base de datos\nmysqldump -u root mitienda > backup_mitienda.sql\n\n# Backup con compresión\nmysqldump -u root mitienda | gzip > backup_mitienda.sql.gz\n\n# Backup de todas las bases\nmysqldump -u root --all-databases > backup_total.sql\n\n# Backup incluyendo procedimientos y triggers\nmysqldump -u root --routines --triggers mitienda > backup_mitienda_full.sql\n\n# Restaurar\nmysql -u root mitienda < backup_mitienda.sql\n\n# Restaurar con gzip\ngunzip < backup_mitienda.sql.gz | mysql -u root mitienda" },
+    { "tipo": "titulo", "valor": "Optimización de tablas" },
+    { "tipo": "comando", "valor": "# Ver estado de tablas\nmysqlcheck -u root --check mitienda\n\n# Analizar tabla (actualiza estadísticas del optimizador)\nmysql -u root mitienda -e \"ANALYZE TABLE productos;\"\n\n# Optimizar tabla fragmentada\nmysql -u root mitienda -e \"OPTIMIZE TABLE productos;\"\n\n# Reparar tabla corrupta\nmysql -u root mitienda -e \"REPAIR TABLE productos;\"\n\n# Todas las tablas de una base\nmysqlcheck -u root --optimize --all-databases" },
+    { "tipo": "titulo", "valor": "Variables importantes de rendimiento" },
+    { "tipo": "comando", "valor": "# Ver variables\nSHOW VARIABLES LIKE 'max_connections';\nSHOW VARIABLES LIKE 'innodb_buffer_pool_size';\n\n# En /etc/mysql/mariadb.conf.d/50-server.cnf\n# Ajustar según RAM disponible (ejemplo para 2GB RAM):\n\n# [mysqld]\n# max_connections = 150\n# innodb_buffer_pool_size = 768M\n# key_buffer_size = 128M\n# query_cache_type = 1\n# query_cache_size = 64M\n# tmp_table_size = 64M\n# max_heap_table_size = 64M\n\nsystemctl restart mariadb" }
+  ]
+}

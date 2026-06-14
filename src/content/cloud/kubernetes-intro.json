@@ -1,0 +1,23 @@
+{
+  "id": "kubernetes-intro",
+  "titulo": "Kubernetes - Orquestación de Contenedores",
+  "categoria": "Cloud",
+  "descripcion": "Introducción a Kubernetes. Pods, Deployments, Services y cómo desplegar aplicaciones escalables.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Qué es Kubernetes" },
+    { "tipo": "texto", "valor": "Kubernetes (K8s) orquesta contenedores en producción: automáticamente despliega, escala y equilibra carga entre nodos. Si un contenedor falla, Kubernetes lo reinicia. Si un nodo falla, redistribuye los pods." },
+    { "tipo": "titulo", "valor": "Conceptos fundamentales" },
+    { "tipo": "lista", "valor": "Pod: la unidad más pequeña. Uno o más contenedores que comparten red y storage.\nDeployment: define cómo se despliega y actualiza una aplicación.\nService: exposición de pods como servicio de red estable.\nReplicaSet: garantiza que siempre hay un número de pods corriendo.\nNamespace: separación lógica de recursos (dev, staging, prod)." },
+    { "tipo": "titulo", "valor": "Instalar kubectl y minikube (desarrollo local)" },
+    { "tipo": "comando", "valor": "# Instalar kubectl\ncurl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\"\nchmod +x kubectl\nsudo mv kubectl /usr/local/bin/\n\n# Instalar minikube (cluster local)\ncurl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64\nsudo install minikube-linux-amd64 /usr/local/bin/minikube\n\n# Iniciar cluster\nminikube start --driver=docker\n\n# Ver estado\nkubectl get nodes\nkubectl cluster-info" },
+    { "tipo": "titulo", "valor": "Tu primer Deployment" },
+    { "tipo": "comando", "valor": "# deployment.yml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: mi-app\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: mi-app\n  template:\n    metadata:\n      labels:\n        app: mi-app\n    spec:\n      containers:\n      - name: mi-app\n        image: nginx:alpine\n        ports:\n        - containerPort: 80\n        resources:\n          requests:\n            memory: \"64Mi\"\n            cpu: \"250m\"\n          limits:\n            memory: \"128Mi\"\n            cpu: \"500m\"" },
+    { "tipo": "comando", "valor": "# Aplicar el deployment\nkubectl apply -f deployment.yml\n\n# Ver pods\nkubectl get pods\n\n# Ver deployments\nkubectl get deployments\n\n# Ver replicasets\nkubectl get rs\n\n# Escalado manual\nkubectl scale deployment mi-app --replicas=5\n\n# Actualizar imagen\nkubectl set image deployment/mi-app mi-app=nginx:1.25\n\n# Ver historial de rollouts\nkubectl rollout history deployment mi-app\n\n# Rollback\nkubectl rollout undo deployment mi-app" },
+    { "tipo": "titulo", "valor": "Exponer con un Service" },
+    { "tipo": "comando", "valor": "# service.yml\napiVersion: v1\nkind: Service\nmetadata:\n  name: mi-app-svc\nspec:\n  selector:\n    app: mi-app\n  ports:\n  - protocol: TCP\n    port: 80\n    targetPort: 80\n  type: LoadBalancer\n\n# Aplicar\nkubectl apply -f service.yml\n\n# Ver servicios\nkubectl get svc\n\n# En minikube, abrir en navegador\nminikube service mi-app-svc\n\n# Para NodePort (desarrollo)\n# Cambiar type a NodePort y usar:\nminikube service mi-app-svc --url" },
+    { "tipo": "titulo", "valor": "Monitorizar con kubectl" },
+    { "tipo": "comando", "valor": "# Ver todos los recursos\nkubectl get all\n\n# Ver logs de un pod\nkubectl logs deployment/mi-app\nkubectl logs -f deployment/mi-app\n\n# Describir un recurso (detalles completos)\nkubectl describe pod nombre-pod\n\n# Ver consumo de recursos\nkubectl top nodes\nkubectl top pods\n\n# Ejecutar comando en un pod\nkubectl exec -it nombre-pod -- sh\n\n# Port-forward para desarrollo\nkubectl port-forward svc/mi-app-svc 8080:80" },
+    { "tipo": "titulo", "valor": "ConfigMaps y Secrets" },
+    { "tipo": "comando", "valor": "# ConfigMap para variables de entorno\nkubectl create configmap app-config --from-literal=ENV=production --from-literal=LOG_LEVEL=info\n\n# Usar en deployment (添添在 deployment.yml)\n# spec.template.spec.containers:\n# - env:\n#   - name: ENV\n#     valueFrom:\n#       configMapKeyRef:\n#         name: app-config\n#         key: ENV\n\n# Secret (datos sensibles, base64 encoded)\necho -n 'dbpassword' | base64\n# ZGJwYXNzd29yZA==\n\nkubectl create secret generic db-credentials \\\n  --from-literal=password=dbpassword \\\n  --from-literal=username=postgres" }
+  ]
+}

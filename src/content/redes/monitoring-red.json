@@ -1,0 +1,26 @@
+{
+  "id": "monitoring-red",
+  "titulo": "Monitorización de Red con tcpdump y ngrep",
+  "categoria": "redes",
+  "descripcion": "Captura y analiza tráfico de red en tiempo real. Diagnostica problemas de conectividad, identifica ataques y depura aplicaciones.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "tcpdump - El clásico" },
+    { "tipo": "texto", "valor": "tcpdump captura paquetes que pasan por una interfaz de red. Es la herramienta fundamental para diagnosticar problemas de red, investigar ataques y entender cómo viajan los datos." },
+    { "tipo": "comando", "valor": "# Captura básica (requiere privilegios)\nsudo tcpdump -i eth0\n\n# Capturar solo un número de paquetes\nsudo tcpdump -i eth0 -c 10\n\n# Mostrar contenido ASCII (útil para HTTP, DNS)\nsudo tcpdump -i eth0 -A\n\n# Guardar en archivo para análisis posterior\nsudo tcpdump -i eth0 -w captura.pcap\n\n# Leer archivo capturado\ntcpdump -r captura.pcap" },
+    { "tipo": "titulo", "valor": "Filtros por protocolo y puerto" },
+    { "tipo": "comando", "valor": "# Solo tráfico HTTP (puerto 80)\nsudo tcpdump -i eth0 port 80\n\n# HTTP y HTTPS (443)\nsudo tcpdump -i eth0 port 80 or port 443\n\n# Solo DNS\nsudo tcpdump -i eth0 port 53\n\n# Solo SSH\nsudo tcpdump -i eth0 port 22\n\n# Solo tráfico desde una IP específica\nsudo tcpdump -i eth0 src 192.168.1.100\n\n# Tráfico hacia un host específico\nsudo tcpdump -i eth0 dst 8.8.8.8" },
+    { "tipo": "titulo", "valor": "Filtros BPF avanzados" },
+    { "tipo": "comando", "valor": "# Paquetes ICMP (ping)\nsudo tcpdump -i eth0 icmp\n\n# Paquetes que no sean desde la red local\nsudo tcpdump -i eth0 not src net 192.168.1.0/24\n\n# Paquetes con flag SYN (inicio de conexiones TCP)\nsudo tcpdump -i eth0 'tcp[tcpflags] & tcp-syn != 0'\n\n# Paquetes fragmentados\nsudo tcpdump -i eth0 'ip[6:2] & 0x3fff != 0x0000'\n\n# Tráfico entre dos IPs\nsudo tcpdump -i eth0 host 192.168.1.10 and host 10.0.0.5" },
+    { "tipo": "titulo", "valor": "ngrep - Buscar patrones en tráfico" },
+    { "tipo": "texto", "valor": "ngrep busca patrones (expresiones regulares) dentro del tráfico de red. Muy útil para encontrar contraseñas en texto plano, depurar APIs HTTP, o identificar comandos específicos." },
+    { "tipo": "comando", "valor": "# Buscar palabra 'password' en tráfico HTTP\nsudo ngrep -d eth0 'password' port 80\n\n# Buscar en cualquier tráfico\nsudo ngrep -d eth0 'POST' | 'GET'\n\n# Mostrar más contexto (más bytes por línea)\nsudo ngrep -d eth0 -d 256 'api' port 443\n\n# Guardar resultados\nsudo ngrep -d eth0 -O resultado.pcap 'login' port 80" },
+    { "tipo": "titulo", "valor": "Análisis rápido de problemas comunes" },
+    { "tipo": "comando", "valor": "# ¿El servidor responde?\nping -c 4 192.168.1.1\n\n# ¿El puerto está abierto?\nsudo tcpdump -i eth0 host 192.168.1.1 and port 80\n# (mientras ejecutas en otra terminal: curl http://192.168.1.1)\n\n# ¿Hay tráfico inesperado?\nsudo tcpdump -i eth0 -c 100 | head -20\n\n# Ver DNS queries de un equipo\nsudo tcpdump -i eth0 -n 'port 53' and 'udp'" },
+    { "tipo": "titulo", "valor": "Wireshark para análisis más profundo" },
+    { "tipo": "texto", "valor": "tcpdump genera archivos .pcap que puedes abrir en Wireshark para un análisis visual completo. Captura con tcpdump y abre en Wireshark." },
+    { "tipo": "comando", "valor": "# Capturar en el servidor, transferir y abrir en local\n# En el servidor:\nsudo tcpdump -i eth0 -w /tmp/captura.pcap port 80 -c 1000\n\n# En tu máquina local:\nscp servidor:/tmp/captura.pcap .\nwireshark captura.pcap" },
+    { "tipo": "titulo", "valor": "Seguridad y permisos" },
+    { "tipo": "texto", "valor": "tcpdump necesita privilegios de root. Mejor no ejecutarlo como root directamente. La alternativa: añade tu usuario al grupo wireshark o usa tcpdump con sudo." },
+    { "tipo": "comando", "valor": "# Peligro: capturar passwords en texto plano\nsudo tcpdump -i eth0 port 80 -A | grep -i 'password'\n\n# Esto muestra TODO el tráfico, úsalo solo en redes que controlas\n# Nunca en redes públicas o de terceros" }
+  ]
+}

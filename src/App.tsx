@@ -105,6 +105,7 @@ function App() {
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId);
     setShowLanding(false); // Hide landing when selecting category from sidebar
+    setSearchQuery(''); // Clear search to ensure filtering works
   };
 
   const handleLegalClick = (section: string) => {

@@ -1,0 +1,22 @@
+{
+  "id": "audit-linux",
+  "titulo": "Auditoría de Seguridad en Linux",
+  "categoria": "seguridad",
+  "descripcion": "Usa auditd para registrar eventos del sistema. Detecta accesos sospechosos, cambios en archivos críticos y comandos peligrosos.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Qué es auditd" },
+    { "tipo": "texto", "valor": "El subsistema de auditoría de Linux (auditd) registra llamadas al sistema, accesos a archivos, ejecución de comandos y eventos de autenticación. Es esencial para cumplir normativas (PCI-DSS, HIPAA) y detectar intrusiones." },
+    { "tipo": "titulo", "valor": "Instalación y activación" },
+    { "tipo": "comando", "valor": "# Instalar\napt install auditd\n\n# Activar y arrancar\nsystemctl enable auditd\nsystemctl start auditd\n\n# Ver estado\nsystemctl status auditd\n\n# Ficheros de log\n/var/log/audit/audit.log    # Log principal\n/var/log/audit/auditd.conf  # Configuración del demonio" },
+    { "tipo": "titulo", "valor": "Reglas básicas" },
+    { "tipo": "comando", "valor": "# Ver reglas actuales\nauditctl -l\n\n# Reglas básicas recomendadas\n# Monitorizar /etc/passwd (cambios en usuarios)\nauditctl -w /etc/passwd -p wa -k users_modify\n\n# Monitorizar /etc/shadow (contraseñas)\nauditctl -w /etc/shadow -p wa -k shadow_modify\n\n# Monitorizar directorio /etc/sudoers\nauditctl -w /etc/sudoers -p wa -k sudoers_modify\n\n# Monitorizar binarios importantes\nauditctl -w /bin/rm -p x -k file_delete\nauditctl -w /usr/bin/sudo -p x -k sudo_executed\n\n# Monitorizar todas las carpetas personales\nauditctl -w /home -p rwxa -k home_access" },
+    { "tipo": "titulo", "valor": "Hacer reglas permanentes" },
+    { "tipo": "comando", "valor": "# /etc/audit/rules.d/audit.rules\n# Este archivo se carga al iniciar auditd\n\n# Reglas del sistema\n-w /etc/passwd -p wa -k users_modify\n-w /etc/shadow -p wa -k shadow_modify\n-w /etc/sudoers -p wa -k sudoers_modify\n-w /etc/group -p wa -k groups_modify\n\n# Binarios críticos\n-w /bin/rm -p x -k file_delete\n-w /bin/chmod -p x -k chmod_executed\n-w /usr/bin/chown -p x -k chown_executed\n-w /usr/bin/sudo -p x -k sudo_executed\n\n# Reiniciar reglas\naugenrules --load" },
+    { "tipo": "titulo", "valor": "Buscar eventos en los logs" },
+    { "tipo": "comando", "valor": "# Buscar por clave\nausearch -k users_modify\n\n# Buscar por tipo de evento\nausearch -f /etc/passwd\n\n# Buscar por usuario\nausearch -ua 1000\n\n# Buscar intentos de acceso sudo fallidos\nausearch -k sudo_executed --interpret | grep -i fail\n\n# Ver últimos eventos\nausearch --start recent\n\n# Resumen de eventos\naureport --summary" },
+    { "tipo": "titulo", "valor": "Informes con aureport" },
+    { "tipo": "comando", "valor": "# Resumen general\naureport --summary\n\n# Informe de eventos de autenticación\naureport -au -i\n\n# Informe de intentos de acceso\naureport --login -i\n\n# Informe de ejecución de archivos\naureport -x -i\n\n# Ver qué archivos fueron modificados\naureport --file -i\n\n# Ver comandos ejecutados\naureport -e --interpret | grep EXECVE" },
+    { "tipo": "titulo", "valor": "Alertas en tiempo real con aureport + cron" },
+    { "tipo": "comando", "valor": "# Script para detectar cambios sospechosos (ejecutar cada 5 min)\n#!/bin/bash\nLOG=/var/log/audit/audit.log\nALERT_EMAIL=admin@midominio.com\n\n# Buscar删除 de archivos en las últimas 5 min\nausearch -k file_delete --start recent | grep -q 'type=EXECVE'\nif [ $? -eq 0 ]; then\n    echo \"ALERTA: Eliminación de archivos detectada\" | \\\n    mail -s \"[AUDIT] Eliminación de archivos\" $ALERT_EMAIL\nfi\n\n# Buscar sudo ejecutado fuera de horario\n# (ejemplo: solo 8am-6pm)\nhora=$(date +%H)\nif [ $hora -lt 8 ] || [ $hora -gt 18 ]; then\n    ausearch -k sudo_executed --start recent | grep -q EXECVE\n    if [ $? -eq 0 ]; then\n        echo \"ALERTA: sudo ejecutado fuera de horario\" | \\\n        mail -s \"[AUDIT] sudo fuera de horario\" $ALERT_EMAIL\n    fi\nfi" }
+  ]
+}

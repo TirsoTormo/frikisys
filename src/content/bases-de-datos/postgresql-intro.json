@@ -1,0 +1,22 @@
+{
+  "id": "postgresql-intro",
+  "titulo": "PostgreSQL - Primeros Pasos",
+  "categoria": "Bases de Datos",
+  "descripcion": "Instala PostgreSQL, crea bases de datos, usuarios y aprende los comandos fundamentales del CLI psql.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Instalar PostgreSQL" },
+    { "tipo": "comando", "valor": "# Debian/Ubuntu\napt install postgresql postgresql-client\n\n# CentOS\nyum install postgresql-server postgresql\npostgresql-setup initdb\n\n# Iniciar\nsystemctl enable postgresql\nsystemctl start postgresql\n\n# Ver estado\nsystemctl status postgresql" },
+    { "tipo": "titulo", "valor": "Conectar con psql" },
+    { "tipo": "comando", "valor": "# Conectar como usuario postgres (superusuario)\nsu - postgres\npsql\n\n# O directamente\nsudo -u postgres psql\n\n# Comandos básicos en psql\n\\l           # Listar bases de datos\n\\du          # Listar usuarios\n\\c nombre_db # Conectar a una base de datos\n\\dt          # Listar tablas\n\\d nombre_tabla  # Describir tabla" },
+    { "tipo": "titulo", "valor": "Crear base de datos y usuario" },
+    { "tipo": "comando", "valor": "-- Crear un nuevo usuario con contraseña\nCREATE USER miapp WITH PASSWORD 'MiContraseñaSegura123';\n\n-- Crear base de datos\nCREATE DATABASE mitienda OWNER miapp;\n\n-- Dar permisos completos\nGRANT ALL PRIVILEGES ON DATABASE mitienda TO miapp;\n\n-- Conectar a la base de datos como el nuevo usuario\n\\c mitienda miapp" },
+    { "tipo": "titulo", "valor": "Crear tablas básicas" },
+    { "tipo": "comando", "valor": "-- Tabla de usuarios\nCREATE TABLE usuarios (\n    id SERIAL PRIMARY KEY,\n    nombre VARCHAR(100) NOT NULL,\n    email VARCHAR(255) UNIQUE NOT NULL,\n    password_hash VARCHAR(255) NOT NULL,\n    rol VARCHAR(50) DEFAULT 'usuario',\n    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);\n\n-- Tabla de productos\nCREATE TABLE productos (\n    id SERIAL PRIMARY KEY,\n    nombre VARCHAR(200) NOT NULL,\n    precio DECIMAL(10,2) NOT NULL CHECK (precio >= 0),\n    stock INTEGER DEFAULT 0,\n    categoria VARCHAR(100),\n    activo BOOLEAN DEFAULT true\n);\n\n-- Tabla de pedidos\nCREATE TABLE pedidos (\n    id SERIAL PRIMARY KEY,\n    usuario_id INTEGER REFERENCES usuarios(id),\n    total DECIMAL(10,2) NOT NULL,\n    estado VARCHAR(50) DEFAULT 'pendiente',\n    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);\n\n-- Crear índices para consultas frecuentes\nCREATE INDEX idx_productos_categoria ON productos(categoria);\nCREATE INDEX idx_pedidos_usuario ON pedidos(usuario_id);" },
+    { "tipo": "titulo", "valor": "Consultas SQL fundamentales" },
+    { "tipo": "comando", "valor": "-- Insertar datos\nINSERT INTO usuarios (nombre, email, password_hash) VALUES\n    ('Ana García', 'ana@ejemplo.com', 'hash123'),\n    ('Carlos López', 'carlos@ejemplo.com', 'hash456');\n\nINSERT INTO productos (nombre, precio, stock, categoria) VALUES\n    ('Portátil Pro X', 1299.99, 15, 'Electrónica'),\n    ('Teclado Mecánico', 89.95, 42, 'Electrónica'),\n    ('Silla Ergonómica', 349.00, 8, 'Muebles');\n\n-- Consultas básicas\nSELECT * FROM productos WHERE precio < 100;\nSELECT nombre, precio FROM productos WHERE categoria = 'Electrónica' ORDER BY precio;\n\n-- JOIN: pedidos con nombre de usuario\nSELECT u.nombre, p.id, p.total, p.estado\nFROM pedidos p\nJOIN usuarios u ON p.usuario_id = u.id\nWHERE p.estado = 'pendiente';" },
+    { "tipo": "titulo", "valor": "Backup y restauración" },
+    { "tipo": "comando", "valor": "# Backup de una base de datos\npg_dump mitienda > backup_mitienda.sql\n\n# Backup con compresión\npg_dump mitienda | gzip > backup_mitienda.sql.gz\n\n# Backup de todas las bases\npg_dumpall > backup_total.sql\n\n# Restaurar\npsql mitienda < backup_mitienda.sql\n\n# Restaurar en un servidor nuevo\n# Primero crear el usuario y la base\nsudo -u postgres psql < backup_total.sql" },
+    { "tipo": "titulo", "valor": "Configuración básica de rendimiento" },
+    { "tipo": "comando", "valor": "# Ver configuración actual\nSHOW max_connections;\nSHOW shared_buffers;\nSHOW work_mem;\n\n# Ajustar en postgresql.conf\n# /etc/postgresql/*/main/postgresql.conf\n\n#shared_buffers = 256MB          # 25% de la RAM\n#work_mem = 64MB                  # Para operaciones de ordenamiento\n#maintenance_work_mem = 128MB      # Para VACUUM, CREATE INDEX\n#effective_cache_size = 768MB       # Memoria disponible para cache de disco\n#max_connections = 100\n\n# Reiniciar para aplicar\nsystemctl restart postgresql" }
+  ]
+}

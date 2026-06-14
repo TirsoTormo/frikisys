@@ -1,0 +1,22 @@
+{
+  "id": "docker-intro",
+  "titulo": "Docker - Contenedores para Desarrolladores",
+  "categoria": "Cloud",
+  "descripcion": "Aprende Docker desde cero. Imágenes, contenedores, volúmenes y redes. Despliega aplicaciones en minutos.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Qué es Docker y por qué importa" },
+    { "tipo": "texto", "valor": "Docker empaqueta aplicaciones con todas sus dependencias en contenedores ligeros. Funciona igual en tu portátil, en producción, o en cualquier cloud. Elimina el clásico 'en mi máquina funciona'." },
+    { "tipo": "titulo", "valor": "Instalar Docker" },
+    { "tipo": "comando", "valor": "# Ubuntu/Debian\ncurl -fsSL https://get.docker.com | sh\n\n# Añadir usuario al grupo docker (evita usar sudo)\nsudo usermod -aG docker $USER\nnewgrp docker\n\n# Verificar\ndocker --version\ndocker ps\n\n# Iniciar si no está activo\nsudo systemctl enable docker\nsudo systemctl start docker" },
+    { "tipo": "titulo", "valor": "Primer contenedor" },
+    { "tipo": "comando", "valor": "# Descargar imagen y ejecutar nginx\ndocker run -d --name mi-nginx -p 8080:80 nginx\n\n# Explicación:\n# -d: detached (en segundo plano)\n# --name: nombre del contenedor\n# -p 8080:80: maps puerto host:contenedor\n# nginx: imagen\n\n# Ver contenedores activos\ndocker ps\n\n# Abrir en navegador\n# http://localhost:8080\n\n# Ver logs\ndocker logs mi-nginx\n\n# Parar y eliminar\ndocker stop mi-nginx\ndocker rm mi-nginx" },
+    { "tipo": "titulo", "valor": "Dockerfile - Construir tu propia imagen" },
+    { "tipo": "comando", "valor": "# Dockerfile para una app Node.js\nFROM node:20-alpine\n\nWORKDIR /app\n\nCOPY package*.json ./\nRUN npm ci --only=production\n\nCOPY . .\n\nEXPOSE 3000\n\nUSER node\n\nCMD [\"node\", \"index.js\"]\n\n# Construir imagen\ndocker build -t mi-app:1.0 .\n\n# Ejecutar desde tu imagen\ndocker run -d -p 3000:3000 --name mi-app mi-app:1.0" },
+    { "tipo": "titulo", "valor": "Volúmenes (persistir datos)" },
+    { "tipo": "comando", "valor": "# Volumen para base de datos\ndocker run -d \\\n  --name postgres-db \\\n  -e POSTGRES_PASSWORD=secreto \\\n  -e POSTGRES_DB=mitienda \\\n  -v postgres_data:/var/lib/postgresql/data \\\n  -p 5432:5432 \\\n  postgres:16\n\n# Ver volúmenes\ndocker volume ls\n\n# Inspecionar volumen\ndocker volume inspect postgres_data\n\n# Mapeo de carpeta local (para desarrollo)\ndocker run -d \\\n  -v $(pwd)/mi-codigo:/app \\\n  -p 3000:3000 \\\n  mi-app:dev" },
+    { "tipo": "titulo", "valor": "Docker Compose - Multi-contenedor" },
+    { "tipo": "comando", "valor": "# docker-compose.yml\nversion: '3.8'\n\nservices:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    depends_on:\n      - db\n      - redis\n    environment:\n      DATABASE_URL: postgresql://postgres:secreto@db:5432/mitienda\n      REDIS_URL: redis://redis:6379\n\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_PASSWORD: secreto\n      POSTGRES_DB: mitienda\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n\n  redis:\n    image: redis:7-alpine\n    volumes:\n      - redis_data:/data\n\nvolumes:\n  postgres_data:\n  redis_data:" },
+    { "tipo": "titulo", "valor": "Comandos esenciales" },
+    { "tipo": "comando", "valor": "# Gestión de contenedores\ndocker ps -a              # Todos los contenedores\ndocker start nombre       # Iniciar\ndocker stop nombre        # Parar\ndocker restart nombre     # Reiniciar\ndocker rm nombre          # Eliminar (primero stop)\n\n# Imágenes\ndocker images             # Ver imágenes descargadas\ndocker rmi nombre:tag     # Eliminar imagen\ndocker pull ubuntu:22.04   # Descargar imagen\n\n# Limpieza\ndocker system prune       # Eliminar contenedores parados, imágenes sin usar, redes\ndocker volume prune        # Eliminar volúmenes huérfanos" }
+  ]
+}

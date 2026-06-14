@@ -1,0 +1,22 @@
+{
+  "id": "mongodb",
+  "titulo": "MongoDB - Base de Datos NoSQL",
+  "categoria": "Bases de Datos",
+  "descripcion": "Introducción a MongoDB. Documentos, colecciones, queries y operaciones CRUD. Ideal para datos flexibles y aplicaciones modernas.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Qué es MongoDB" },
+    { "tipo": "texto", "valor": "MongoDB es una base de datos NoSQL orientada a documentos. Almacena datos en formato BSON (similar a JSON) en lugar de tablas relacionales. Es ideal cuando la estructura de datos es flexible o cuando necesitas escalar horizontalmente." },
+    { "tipo": "titulo", "valor": "Instalar MongoDB" },
+    { "tipo": "comando", "valor": "# Ubuntu 22.04\nwget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | apt-key add -\necho \"deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse\" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list\napt update\napt install -y mongodb-org\n\nsystemctl enable mongod\nsystemctl start mongod\n\n# Verificar\nmongosh --eval \"db.adminCommand('ping')\"" },
+    { "tipo": "titulo", "valor": "Conectar y crear datos" },
+    { "tipo": "comando", "valor": "# Conectar al shell\nmongosh\n\n# Crear base de datos y colección\nuse mitienda\n\n# Insertar un documento\ndb.productos.insertOne({\n    nombre: \"Portátil Pro\",\n    precio: 1299.99,\n    stock: 15,\n    categoria: \"Electrónica\",\n    tags: [\"laptop\", \"trabajo\", \"potencia\"]\n})\n\n# Insertar varios documentos\ndb.productos.insertMany([\n    { nombre: \"Ratón Gaming\", precio: 49.99, stock: 30, categoria: \"Electrónica\" },\n    { nombre: \"Silla Ergonómica\", precio: 299.00, stock: 5, categoria: \"Muebles\" },\n    { nombre: \"Monitor 27\"\", precio: 249.00, stock: 12, categoria: \"Electrónica\" }\n])" },
+    { "tipo": "titulo", "valor": "Consultas (find)" },
+    { "tipo": "comando", "valor": "# Buscar todos\ndb.productos.find()\n\n# Con formato legible\ndb.productos.find().pretty()\n\n# Filtrar por campo\nequals: db.productos.find({ categoria: \"Electrónica\" })\nmenor que: db.productos.find({ precio: { $lt: 100 } })\nrango: db.productos.find({ precio: { $gte: 50, $lte: 300 } })\n\n# Proyecciones: solo ciertos campos\ndb.productos.find({}, { nombre: 1, precio: 1, _id: 0 })\n\n# Ordenar y limitar\ndb.productos.find().sort({ precio: -1 }).limit(5)\n\n# Contar\ndb.productos.countDocuments({ categoria: \"Electrónica\" })" },
+    { "tipo": "titulo", "valor": "Actualizar y eliminar" },
+    { "tipo": "comando", "valor": "# Actualizar un documento\ndb.productos.updateOne(\n    { nombre: \"Ratón Gaming\" },\n    { $set: { precio: 39.99, stock: 50 } }\n)\n\n# Incrementar campo numérico\ndb.productos.updateOne(\n    { nombre: \"Portátil Pro\" },\n    { $inc: { stock: -1 } }\n)\n\n# Actualizar varios\ndb.productos.updateMany(\n    { categoria: \"Electrónica\" },\n    { $set: { activo: true } }\n)\n\n# Eliminar documento\ndb.productos.deleteOne({ nombre: \"Monitor 27\\\"\" })\n\n# Eliminar varios\ndb.productos.deleteMany({ stock: 0 })" },
+    { "tipo": "titulo", "valor": "Índices" },
+    { "tipo": "comando", "valor": "# Crear índice en campo frecuentemente consultado\ndb.productos.createIndex({ categoria: 1 })\ndb.productos.createIndex({ precio: 1 })\ndb.productos.createIndex({ nombre: \"text\" })\n\n# Índice compuesto\ndb.pedidos.createIndex({ usuario_id: 1, creado_en: -1 })\n\n# Índice único\ndb.usuarios.createIndex({ email: 1 }, { unique: true })\n\n# Ver índices\ndb.productos.getIndexes()\n\n# Eliminar índice\ndb.productos.dropIndex(\"categoria_1\")" },
+    { "tipo": "titulo", "valor": "Backup y restore" },
+    { "tipo": "comando", "valor": "# Backup (exporta a directorio)\nmongodump --db mitienda --out /backups/\n\n# Backup comprimido\nmongodump --db mitienda --archive=/backups/mitienda.archive --gzip\n\n# Restaurar\nmongorestore --db mitienda /backups/mitienda/\n\n# Restaurar desde archivo\nmongorestore --db mitienda --archive=/backups/mitienda.archive --gzip" }
+  ]
+}

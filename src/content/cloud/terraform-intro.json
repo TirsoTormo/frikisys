@@ -1,0 +1,23 @@
+{
+  "id": "terraform-intro",
+  "titulo": "Terraform - Infrastructure as Code",
+  "categoria": "Cloud",
+  "descripcion": "Gestiona tu infraestructura como código. Define, despliega y versiona infraestructura en AWS, GCP, Azure y más.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Qué es Terraform" },
+    { "tipo": "texto", "valor": "Terraform define infraestructura como código (IaC) usando HCL (HashiCorp Configuration Language). Describe recursos en archivos .tf y Terraform crea, modifica o destruye la infraestructura de forma idempotente y predecible." },
+    { "tipo": "titulo", "valor": "Instalar Terraform" },
+    { "tipo": "comando", "valor": "# Descargar (Linux)\nwget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip\nunzip terraform_1.6.0_linux_amd64.zip\nsudo mv terraform /usr/local/bin/\n\n# Verificar\nterraform version\n\n# Autocompletado (opcional)\nterraform -install-autocomplete" },
+    { "tipo": "titulo", "valor": "Primer archivo Terraform" },
+    { "tipo": "comando", "valor": "# main.tf\nterraform {\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \"~> 5.0\"\n    }\n  }\n}\n\nprovider \"aws\" {\n  region = \"eu-west-1\"\n  access_key = var.aws_access_key\n  secret_key = var.aws_secret_key\n}\n\nresource \"aws_instance\" \"web\" {\n  ami           = \"ami-0e2e8d4a3c1d4e5f6\"\n  instance_type = \"t3.micro\"\n\n  tags = {\n    Name        = \"web-server\"\n    Environment = var.environment\n    ManagedBy   = \"terraform\"\n  }\n}\n\nresource \"aws_security_group\" \"web_sg\" {\n  name = \"web-sg\"\n\n  ingress {\n    from_port   = 80\n    to_port     = 80\n    protocol    = \"tcp\"\n    cidr_blocks = [\"0.0.0.0/0\"]\n  }\n\n  ingress {\n    from_port   = 443\n    to_port     = 443\n    protocol    = \"tcp\"\n    cidr_blocks = [\"0.0.0.0/0\"]\n  }\n\n  egress {\n    from_port   = 0\n    to_port     = 0\n    protocol    = \"-1\"\n    cidr_blocks = [\"0.0.0.0/0\"]\n  }\n}" },
+    { "tipo": "titulo", "valor": "Variables y outputs" },
+    { "tipo": "comando", "valor": "# variables.tf\nvariable \"aws_access_key\" {\n  type      = string\n  sensitive = true\n}\n\nvariable \"aws_secret_key\" {\n  type      = string\n  sensitive = true\n}\n\nvariable \"environment\" {\n  type    = string\n  default = \"production\"\n}\n\n# outputs.tf\noutput \"instance_ip\" {\n  value       = aws_instance.web.public_ip\n  description = \"IP pública del servidor web\"\n}\n\noutput \"instance_id\" {\n  value = aws_instance.web.id\n}" },
+    { "tipo": "titulo", "valor": "Flujo de trabajo" },
+    { "tipo": "comando", "valor": "# 1. Inicializar (descarga providers)\nterraform init\n\n# 2. Formatear y validar\nterraform fmt\nterraform validate\n\n# 3. Plan: ver qué cambios se harán (sin aplicar)\nterraform plan\n\n# 4. Aplicar cambios (confirma interactivamente)\nterraform apply\n\n# Aplicar y guardar estado automáticamente\n# El estado se guarda en terraform.tfstate\n\n# 5. Ver estado actual\nterraform show\n\n# 6. Destruir todo (CUIDADO)\nterraform destroy" },
+    { "tipo": "titulo", "valor": "Terraform Remote State" },
+    { "tipo": "texto", "valor": "Guardar el estado en local (terraform.tfstate) está bien para desarrollo. En equipo, usa remote state con S3 + DynamoDB para bloquear estados y evitar conflictos." },
+    { "tipo": "comando", "valor": "# Añadir backend en main.tf\nterraform {\n  backend \"s3\" {\n    bucket         = \"mi-terraform-state\"\n    key            = \"prod/terraform.tfstate\"\n    region         = \"eu-west-1\"\n    encrypt        = true\n    dynamodb_table = \"terraform-locks\"\n  }\n}\n\n# Crear el bucket y tabla DynamoDB primero\n# IAM: el usuario necesita permisos de S3 y DynamoDB" },
+    { "tipo": "titulo", "valor": "Módulos reutilizables" },
+    { "tipo": "comando", "valor": "# modules/ec2-instance/main.tf\nvariable \"instance_type\" {}\nvariable \"ami_id\" {}\nvariable \"name_prefix\" {}\n\nresource \"aws_instance\" \"this\" {\n  ami           = var.ami_id\n  instance_type = var.instance_type\n\n  tags = {\n    Name = \"${var.name_prefix}-instance\"\n  }\n}\n\n# Usar el módulo\nmodule \"web_server\" {\n  source = \"./modules/ec2-instance\"\n\n  instance_type = \"t3.micro\"\n  ami_id        = \"ami-0e2e8d4a3c1d4e5f6\"\n  name_prefix   = \"web\"\n}" }
+  ]
+}

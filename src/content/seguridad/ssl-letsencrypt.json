@@ -1,0 +1,23 @@
+{
+  "id": "ssl-letsencrypt",
+  "titulo": "SSL/TLS con Let's Encrypt",
+  "categoria": "seguridad",
+  "descripcion": "Configura certificados SSL gratuitos con Let's Encrypt y certbot. HTTPS para tu web en minutos.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Let's Encrypt y certbot" },
+    { "tipo": "texto", "valor": "Let's Encrypt es una autoridad certificadora gratuita que emite certificados válidos para todos los navegadores. certbot es la herramienta oficial para obtener y renovar estos certificados automáticamente." },
+    { "tipo": "titulo", "valor": "Instalar certbot" },
+    { "tipo": "comando", "valor": "# Ubuntu (desde 18.04)\napt update && apt install certbot python3-certbot-nginx\n\n# Debian\napt install certbot python3-certbot-nginx\n\n# CentOS\nyum install epel-release\nyum install certbot python3-certbot-nginx\n\n# O usando snap (última versión)\nsnap install --classic certbot\nln -s /snap/bin/certbot /usr/bin/certbot" },
+    { "tipo": "titulo", "valor": "Obtener certificado para Nginx" },
+    { "tipo": "comando", "valor": "# Asegúrate de que Nginx está corriendo y el dominio apunta al servidor\nsystemctl status nginx\n\n# Obtener certificado y configurar Nginx automáticamente\ncertbot --nginx -d midominio.com -d www.midominio.com\n\n# Seguir las preguntas:\n# - Introducir email para avisos de expiración\n# - Aceptar términos de servicio\n# - Elegir redirect HTTP->HTTPS (recomendado: 2 - Redirect)" },
+    { "tipo": "titulo", "valor": "Renovación automática" },
+    { "tipo": "texto", "valor": "Let's Encrypt expira en 90 días. certbot crea un cron job o timer de systemd para renovar automáticamente. Puedes probarlo sin hacer cambios reales." },
+    { "tipo": "comando", "valor": "# Probar renovación (dry run)\ncertbot renew --dry-run\n\n# Forzar renovación (si el cert está próximo a expirar)\ncertbot renew\n\n# Ver estado del timer de renovación\nsystemctl status certbot.timer\n\n# Ver logs de renovación\njournalctl -u certbot-renew -n 50" },
+    { "tipo": "titulo", "valor": "Configuración manual (sin el plugin de Nginx)" },
+    { "tipo": "comando", "valor": "# Generar solo el certificado (validación manual)\ncertbot certonly --webroot -w /var/www/html -d midominio.com -d www.midominio.com\n\n# Configurar Nginx manualmente con el certificado\n# /etc/nginx/sites-available/midominio.com\nserver {\n    listen 443 ssl http2;\n    server_name midominio.com www.midominio.com;\n\n    ssl_certificate /etc/letsencrypt/live/midominio.com/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/midominio.com/privkey.pem;\n\n    ssl_protocols TLSv1.2 TLSv1.3;\n    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;\n    ssl_prefer_server_ciphers off;\n\n    root /var/www/html;\n    index index.html;\n}\n\n# Redirigir HTTP a HTTPS\nserver {\n    listen 80;\n    server_name midominio.com www.midominio.com;\n    return 301 https://$host$request_uri;\n}" },
+    { "tipo": "titulo", "valor": "Scripts de renew personalizados" },
+    { "tipo": "comando", "valor": "# Renew hook: recargar Nginx tras renovar\ncertbot renew --deploy-hook \"systemctl reload nginx\"\n\n# Renew hook para múltiples servicios\n# /etc/letsencrypt/cli.ini\n[renewalparams]\ndeploy_hook = systemctl reload nginx php-fpm postgresql\npost_hook = systemctl reload fail2ban" },
+    { "tipo": "titulo", "valor": "Verificar certificado" },
+    { "tipo": "comando", "valor": "# Ver información del certificado\nopenssl x509 -in /etc/letsencrypt/live/midominio.com/cert.pem -text -noout\n\n# Ver fecha de expiración\ncertbot certificates\n\n# Probar en SSL Labs\n# https://www.ssllabs.com/ssltest/analyze.html?d=midominio.com\n\n# Probar con openssl\necho | openssl s_client -servername midominio.com -connect midominio.com:443 | openssl x509 -noout -dates" }
+  ]
+}

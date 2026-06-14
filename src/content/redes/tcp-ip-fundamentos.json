@@ -1,0 +1,26 @@
+{
+  "id": "tcp-ip-fundamentos",
+  "titulo": "TCP/IP - Fundamentos de Redes",
+  "categoria": "redes",
+  "descripcion": "Entiende el modelo TCP/IP, direcciones IP, subredes y cómo funcionan los protocolos fundamentales de Internet.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Qué es TCP/IP" },
+    { "tipo": "texto", "valor": "TCP/IP es el conjunto de protocolos que hace funcionar Internet. Divide las comunicaciones en capas, cada una con una responsabilidad específica. Entender este modelo es esencial para cualquier sysadmin." },
+    { "tipo": "titulo", "valor": "Las 4 capas del modelo TCP/IP" },
+    { "tipo": "lista", "valor": "Aplicación: HTTP, DNS, SSH, FTP. La capa que interactúa directamente con el usuario y las aplicaciones.\nTransporte: TCP y UDP. TCP garantiza que los datos lleguen en orden y sin errores. UDP es más rápido pero no garantiza entrega.\nInternet: IP (IPv4 e IPv6). Se encarga de enrutar los paquetes desde origen hasta destino.\nEnlace de datos: Ethernet, Wi-Fi. La comunicación física en la red local." },
+    { "tipo": "titulo", "valor": "Direcciones IPv4" },
+    { "tipo": "texto", "valor": "Una dirección IPv4 tiene 32 bits, representada como 4 octetos decimalesseparados por puntos (ej: 192.168.1.100). El rango privado más común es 192.168.x.x para redes locales." },
+    { "tipo": "comando", "valor": "# Ver tu dirección IP en Linux\nip addr show\n\n# En Windows\nipconfig\n\n# Ver puerta de enlace y DNS\nip route show\n# o\nnetstat -rn" },
+    { "tipo": "titulo", "valor": "Direcciones IPv6" },
+    { "tipo": "texto", "valor": "IPv6 usa 128 bits, permitiendo un número casi infinito de direcciones. Se representa en 8 grupos de 4 dígitos hexadecimales (ej: 2001:0db8:85a3:0000:0000:8a2e:0370:7334). Las direcciones link-local empiezan por fe80::" },
+    { "tipo": "comando", "valor": "# Ver IPv6\nip -6 addr show\n\n# Ping a una dirección IPv6\nping6 fe80::1%eth0" },
+    { "tipo": "titulo", "valor": "Puertos comunes" },
+    { "tipo": "lista", "valor": "22: SSH - Acceso remoto seguro\n25: SMTP - Envío de correo\n53: DNS - Resolución de nombres\n80: HTTP - Web sin cifrar\n443: HTTPS - Web con cifrado TLS\n3306: MySQL/MariaDB - Base de datos\n5432: PostgreSQL - Base de datos\n6379: Redis - Cache\n9200: Elasticsearch - Búsqueda" },
+    { "tipo": "titulo", "valor": "Tabla de enrutamiento" },
+    { "tipo": "texto", "valor": "La tabla de enrutamiento indica hacia dónde enviar cada paquete. La ruta por defecto (0.0.0.0/0) captura todo el tráfico que no tiene una ruta más específica." },
+    { "tipo": "comando", "valor": "# Ver tabla de enrutamiento\nip route show\n\n# Añadir una ruta estática\nip route add 10.0.0.0/8 via 192.168.1.1 dev eth0\n\n# Eliminar una ruta\nip route del 10.0.0.0/8" },
+    { "tipo": "titulo", "valor": "Concepto de subred y CIDR" },
+    { "tipo": "texto", "valor": "CIDR (Classless Inter-Domain Routing) permite definir redes de cualquier tamaño. /24 significa 256 direcciones (254 usables), /16 significa 65536 direcciones. Cuanto menor el número tras la barra, mayor la red." },
+    { "tipo": "comando", "valor": "# Calcular una subred\nipcalc 192.168.1.0/24\n# Muestra: dirección de red, broadcast, rango de hosts, máscara" }
+  ]
+}

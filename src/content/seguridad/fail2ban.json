@@ -1,0 +1,25 @@
+{
+  "id": "fail2ban",
+  "titulo": "fail2ban - Protección contra Ataques",
+  "categoria": "seguridad",
+  "descripcion": "Instala y configura fail2ban para banear IPs que intenten ataques de fuerza bruta contra SSH, Nginx, Apache y más.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Qué es fail2ban" },
+    { "tipo": "texto", "valor": "fail2ban monitorea logs del sistema y detecta patrones de ataque (intentos de login fallidos, requests sospechosas). Cuando una IP supera el umbral, la banea automáticamente añadiendo una regla en el firewall." },
+    { "tipo": "titulo", "valor": "Instalación" },
+    { "tipo": "comando", "valor": "# Debian/Ubuntu\napt update && apt install fail2ban\n\n# CentOS/RHEL\nyum install epel-release\nyum install fail2ban\n\n# Arch Linux\npacman -S fail2ban\n\n# Iniciar y activar al arranque\nsystemctl enable fail2ban\nsystemctl start fail2ban" },
+    { "tipo": "titulo", "valor": "Estructura de configuración" },
+    { "tipo": "comando", "valor": "/etc/fail2ban/jail.conf      # Configuración global (no editar directamente)\n/etc/fail2ban/jail.local     # Tus overrides (edita aquí)\n/etc/fail2ban/action.d/       # Acciones disponibles (ban/unban)\n/etc/fail2ban/filter.d/        # Filtros para cada servicio\n/var/log/fail2ban.log         # Logs de fail2ban" },
+    { "tipo": "titulo", "valor": "Configuración básica en jail.local" },
+    { "tipo": "comando", "valor": "# /etc/fail2ban/jail.local\n[DEFAULT]\n# Tiempo que la IP está baneada (en segundos)\nbantime = 3600\n\n# Ventana de tiempo para contar intentos (en segundos)\nfindtime = 600\n\n# Intentos máximos antes del ban\nmaxretry = 5\n\n# Ignore IPs conocidas (tu oficina, tu casa)\nignoreip = 127.0.0.1/8 192.168.1.0/24 10.0.0.0/8" },
+    { "tipo": "titulo", "valor": "Jails básicos" },
+    { "tipo": "comando", "valor": "[sshd]\nenabled = true\nport = ssh\nfilter = sshd\nlogpath = /var/log/auth.log\nmaxretry = 3\nbantime = 86400  # 24 horas\n\n[nginx-http-auth]\nenabled = true\nfilter = nginx-http-auth\nport = http,https\nlogpath = /var/log/nginx/error.log\nmaxretry = 5\n\n[nginx-noscript]\nenabled = true\nport = http,https\nfilter = nginx-noscript\nlogpath = /var/log/nginx/access.log\nmaxretry = 3" },
+    { "tipo": "titulo", "valor": "Crear un filtro personalizado" },
+    { "tipo": "texto", "valor": "Los filtros definen qué patrones buscar en los logs. fail2ban ya tiene filtros para servicios comunes, pero puedes crear los tuyos." },
+    { "tipo": "comando", "valor": "# /etc/fail2ban/filter.d/mi-app.conf\n[Definition]\nfailregex = ^<HOST> - Solicitud sospechosa.*\n            ^<HOST> - Login fallido para usuario.*\nignoreregex =" },
+    { "tipo": "titulo", "valor": "Comandos útiles" },
+    { "tipo": "comando", "valor": "# Ver estado de todos los jails\nfail2ban-client status\n\n# Ver IPs baneadas en un jail específico\nfail2ban-client status sshd\n\n# Banear una IP manualmente\nfail2ban-client set sshd banip 192.168.1.99\n\n# Desbanear una IP\nfail2ban-client set sshd unbanip 192.168.1.99\n\n# Ver logs\ntail -f /var/log/fail2ban.log\n\n# Recargar configuración sin reiniciar el servicio\nfail2ban-client reload" },
+    { "tipo": "titulo", "valor": "Ejemplo: proteger autenticación básica HTTP" },
+    { "tipo": "comando", "valor": "# Activar jail para htpasswd (autenticación básica Apache/Nginx)\n# Asegúrate de tener auth_basic configurado en Nginx:\n# location /admin {\n#     auth_basic \"Restricted\";\n#     auth_basic_user_file /etc/nginx/.htpasswd;\n# }\n\n# En jail.local añadir:\n[nginx-http-auth]\nenabled = true\nport = http,https\nfilter = nginx-http-auth\nlogpath = /var/log/nginx/error.log\nmaxretry = 3\n\n# Verificar que el filtro funciona\nfail2ban-regex /var/log/nginx/error.log /etc/fail2ban/filter.d/nginx-http-auth.conf" }
+  ]
+}

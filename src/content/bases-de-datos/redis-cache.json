@@ -1,0 +1,24 @@
+{
+  "id": "redis-cache",
+  "titulo": "Redis - Cache y Cola de Mensajes",
+  "categoria": "Bases de Datos",
+  "descripcion": "Instala y usa Redis como cache en memoria, gestor de sesiones y cola de mensajes. Comandos fundamentales y patrones.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Qué es Redis" },
+    { "tipo": "texto", "valor": "Redis es una base de datos en memoria, extremadamente rápida. Se usa como cache, almacén de sesiones, cola de mensajes y contador en tiempo real. Soporta estructuras de datos: strings, hashes, lists, sets y sorted sets." },
+    { "tipo": "titulo", "valor": "Instalar y arrancar" },
+    { "tipo": "comando", "valor": "# Instalar\napt install redis-server\n\n# Arrancar\nsystemctl enable redis-server\nsystemctl start redis-server\n\n# Conectar al CLI\nredis-cli\n\n# Probar conexión\nredis-cli ping\n# Respuesta esperada: PONG" },
+    { "tipo": "titulo", "valor": "Operaciones con strings (cache básico)" },
+    { "tipo": "comando", "valor": "# Establecer un valor con expiración (cache de 60 segundos)\nSET usuario:100 \"Ana García\"\nSET usuario:100 \"Ana García\" EX 60\n\n# Obtener valor\nGET usuario:100\n\n# Ver tiempo de vida restante\nTTL usuario:100\n\n# Incrementar contador\nSET contador_visitas 0\nINCR contador_visitas\nINCRBY contador_visitas 5\n\n# Varios valores a la vez\nMSET producto:1 \"Portátil\" producto:2 \"Ratón\" producto:3 \"Teclado\"\nMGET producto:1 producto:2 producto:3" },
+    { "tipo": "titulo", "valor": "Hashes (objetos)" },
+    { "tipo": "comando", "valor": "# Guardar un objeto usuario\nHSET usuario:100 nombre \"Ana García\" email \"ana@ejemplo.com\" rol \"admin\"\n\n# Obtener un campo específico\nHGET usuario:100 email\n\n# Obtener todos los campos\nHGETALL usuario:100\n\n# Incrementar un campo numérico\nHINCRBY usuario:100 edad 1\n\n# Ver si existe campo\nHEXISTS usuario:100 nombre" },
+    { "tipo": "titulo", "valor": "Lists (colas y stacks)" },
+    { "tipo": "comando", "valor": "# Añadir a cola (RPUSH = izquierda)\nRPUSH cola_tareas \"enviar-email\"\nRPUSH cola_tareas \"generar-report\"\nRPUSH cola_tareas \"backup-db\"\n\n# Obtener todos los elementos\nLRANGE cola_tareas 0 -1\n\n# Sacar elemento (dequeue)\nLPOP cola_tareas\n\n# Tamaño de la cola\nLLEN cola_tareas" },
+    { "tipo": "titulo", "valor": "Sets y Sorted Sets" },
+    { "tipo": "comando", "valor": "# Set: colección sin duplicados\nSADD productos_populares \"portatil\" \"raton\" \"teclado\"\nSMEMBERS productos_populares\nSISMEMBER productos_populares \"portatil\"\n\n# Sorted Set: con puntuación (ej: ranking)\nZADD ranking 1500 \"ana\"\nZADD ranking 2300 \"carlos\"\nZADD ranking 980 \"luis\"\n\n# Top 3\nZREVRANGE ranking 0 2 WITHSCORES\n\n# Ver puntuación de un usuario\nZSCORE ranking \"ana\"" },
+    { "tipo": "titulo", "valor": "Patrón cache con Laravel/PHP" },
+    { "tipo": "comando", "valor": "# Instalación\ncomposer require predis/predis\n\n# Configurar en .env\nREDIS_HOST=127.0.0.1\nREDIS_PORT=6379\n\n# Uso en PHP\n$redis = new Predis\\Client();\n\n// Guardar resultado de consulta en cache (5 min)\n$key = \"usuario:$userId:perfil\";\nif ($redis->exists($key)) {\n    $perfil = json_decode($redis->get($key));\n} else {\n    $perfil = $db->query(\"SELECT * FROM usuarios WHERE id = ?\", $userId);\n    $redis->setex($key, 300, json_encode($perfil));\n}\n\n// Invalidar cache al actualizar\n$redis->del(\"usuario:$userId:perfil\");" },
+    { "tipo": "titulo", "valor": "Configuración y seguridad" },
+    { "tipo": "comando", "valor": "# /etc/redis/redis.conf\n\n# Bind solo a localhost (nunca exponer a Internet)\nbind 127.0.0.1\n\n# Requiere contraseña\nrequirepass TuContraseñaSegura123\n\n# Maximum memory\nmaxmemory 256mb\nmaxmemory-policy allkeys-lru\n\n# Persistencia: guardar a disco cada minuto\nsave 60 1\n\n# Reiniciar\nsystemctl restart redis-server\n\n# Probar con password\nredis-cli -a TuContraseñaSegura123 ping" }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "dns-bind",
+  "titulo": "DNS - Configurar un Servidor Bind",
+  "categoria": "redes",
+  "descripcion": "Instala y configura BIND9 como servidor DNS autoritativo y caché. Zonas directas, inversas y registros DNS.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Cómo funciona DNS" },
+    { "tipo": "texto", "valor": "DNS traduce nombres de dominio (frikisys.com) a direcciones IP (192.168.1.1). Cuando escribes una URL, tu ordenador pregunta a un resolver DNS, que consulta a los servidores autoritativos de cada zona." },
+    { "tipo": "titulo", "valor": "Instalar BIND9" },
+    { "tipo": "comando", "valor": "# Debian/Ubuntu\napt update && apt install bind9 bind9utils dnsutils\n\n# CentOS/RHEL\nyum install bind bind-utils\n\n# Arch Linux\npacman -S bind" },
+    { "tipo": "titulo", "valor": "Estructura de configuración" },
+    { "tipo": "texto", "valor": "BIND se configura principalmente en /etc/bind/named.conf. Incluye: named.conf.options (opciones globales), named.conf.local (zonas locales), y los archivos de zona en /var/cache/bind/." },
+    { "tipo": "comando", "valor": "# Archivos principales de configuración\n/etc/bind/named.conf           # Configuración principal\n/etc/bind/named.conf.options    # Opciones (forwarders, recursion)\n/etc/bind/named.conf.local      # Zonas locales\n/var/cache/bind/               # Archivos de zona\n/var/log/named/                 # Logs de BIND" },
+    { "tipo": "titulo", "valor": "Configurar un servidor caché DNS" },
+    { "tipo": "texto", "valor": "La forma más simple: convierte tu servidor en un resolver que cachea respuestas. Los clientes lo usan como DNS primario." },
+    { "tipo": "comando", "valor": "# Editar /etc/bind/named.conf.options\noptions {\n    directory \"/var/cache/bind\";\n    recursion yes;  # Permite consultas recursivas de clientes\n    allow-query { 192.168.1.0/24; };  # Solo red local\n    \n    # Forwarders: si no tenemos la respuesta, preguntamos a estos\n    forwarders {\n        8.8.8.8;\n        8.8.4.4;\n    };\n};\n\n# Verificar sintaxis\nnamed-checkconf\n\n# Reiniciar\nsystemctl restart bind9\nsystemctl enable bind9" },
+    { "tipo": "titulo", "valor": "Crear una zona directa" },
+    { "tipo": "comando", "valor": "# Añadir en /etc/bind/named.conf.local\nzone \"midominio.local\" {\n    type master;\n    file \"/var/cache/bind/db.midominio.local\";\n};" },
+    { "tipo": "comando", "valor": "# Archivo de zona: /var/cache/bind/db.midominio.local\n$TTL    86400\n@       IN      SOA     ns1.midominio.local. admin.midominio.local. (\n                        2024010101  ; Serial (YYYYMMDDNN)\n                        3600        ; Refresh (1 hora)\n                        1800        ; Retry (30 min)\n                        604800      ; Expire (1 semana)\n                        86400 )     ; Minimum TTL (1 día)\n\n@       IN      NS      ns1.midominio.local.\n@       IN      A       192.168.1.10\nns1     IN      A       192.168.1.10\nwww     IN      A       192.168.1.10\nmail    IN      A       192.168.1.20\n@       IN      MX 10   mail.midominio.local." },
+    { "tipo": "titulo", "valor": "Crear una zona inversa" },
+    { "tipo": "comando", "valor": "# Añadir en /etc/bind/named.conf.local\nzone \"1.168.192.in-addr.arpa\" {\n    type master;\n    file \"/var/cache/bind/db.192.168.1\";\n};" },
+    { "tipo": "comando", "valor": "# Archivo zona inversa: /var/cache/bind/db.192.168.1\n$TTL    86400\n@       IN      SOA     ns1.midominio.local. admin.midominio.local. (\n                        2024010101 ; Serial\n                        3600       ; Refresh\n                        1800       ; Retry\n                        604800     ; Expire\n                        86400 )    ; Minimum TTL\n\n@       IN      NS      ns1.midominio.local.\n\n10      IN      PTR     ns1.midominio.local.\n10      IN      PTR     www.midominio.local.\n20      IN      PTR     mail.midominio.local." },
+    { "tipo": "titulo", "valor": "Verificar y probar" },
+    { "tipo": "comando", "valor": "# Verificar sintaxis de zona\nnamed-checkzone midominio.local /var/cache/bind/db.midominio.local\nnamed-checkzone 1.168.192.in-addr.arpa /var/cache/bind/db.192.168.1\n\n# Recargar zonas sin reiniciar\nrndc reload\n\n# Probar resolución\ndig @192.168.1.10 www.midominio.local\nnslookup www.midominio.local 192.168.1.10\n\n# Ver estado del servidor\nsystemctl status bind9\nrndc status" }
+  ]
+}

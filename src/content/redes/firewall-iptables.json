@@ -1,0 +1,24 @@
+{
+  "id": "firewall-iptables",
+  "titulo": "Firewall con iptables - Guía Práctica",
+  "categoria": "redes",
+  "descripcion": "Configura firewalls con iptables en Linux. Aprende cadenas, reglas, NAT y cómo proteger tu servidor.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Conceptos básicos de iptables" },
+    { "tipo": "texto", "valor": "iptables es el firewall de Linux. Trabaja con tablas (filter, nat, mangle), cadenas (INPUT, OUTPUT, FORWARD) y reglas. Cada paquete que atraviesa el sistema se evalúa contra las reglas en orden." },
+    { "tipo": "titulo", "valor": "Estructura de una regla" },
+    { "tipo": "texto", "valor": "Una regla se evalúa en orden. La primera regla que coincide determina el destino (ACCEPT, DROP, REJECT). Por defecto, todo está permitido si no hay reglas." },
+    { "tipo": "comando", "valor": "# Ver reglas actuales\niptables -L -n -v\n\n# Ver tabla NAT\niptables -t nat -L -n -v\n\n# Contador de paquetes por regla\niptables -L INPUT -Z  # Resetear contadores\niptables -L INPUT -v" },
+    { "tipo": "titulo", "valor": "Reglas básicas de seguridad" },
+    { "tipo": "comando", "valor": "# Permitir tráfico en loopback\niptables -A INPUT -i lo -j ACCEPT\niptables -A OUTPUT -o lo -j ACCEPT\n\n# Permitir conexiones establecidas\niptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT\n\n# Permitir SSH (cuidado: no bloquearte a ti mismo)\niptables -A INPUT -p tcp --dport 22 -j ACCEPT\n\n# Permitir HTTP y HTTPS\niptables -A INPUT -p tcp --dport 80 -j ACCEPT\niptables -A INPUT -p tcp --dport 443 -j ACCEPT\n\n# Denegar todo lo demás (política restrictiva)\niptables -P INPUT DROP" },
+    { "tipo": "titulo", "valor": "Eliminar y limpiar reglas" },
+    { "tipo": "comando", "valor": "# Eliminar una regla específica (primero lista con números)\niptables -L INPUT --line-numbers\niptables -D INPUT 3  # Elimina la regla 3\n\n# Limpiar todas las reglas de una cadena\niptables -F INPUT\n\n# Limpiar todas las reglas de todas las tablas\niptables -F\niptables -t nat -F\niptables -t mangle -F\n\n# Resetear políticas a ACCEPT\niptables -P INPUT ACCEPT\niptables -P FORWARD ACCEPT\niptables -P OUTPUT ACCEPT" },
+    { "tipo": "titulo", "valor": "NAT y enmascaramiento (compartir internet)" },
+    { "tipo": "texto", "valor": "Para compartir una conexión a Internet desde un servidor Linux, usa NAT (Network Address Translation). El servidor actúa como router para la red local." },
+    { "tipo": "comando", "valor": "# Activar forwarding IP\necho 1 > /proc/sys/net/ipv4/ip_forward\n\n# Hacerlo permanente\n# Editar /etc/sysctl.conf y añadir:\n# net.ipv4.ip_forward = 1\n\n# Configurar NAT (la interfaz wan es eth0 o el nombre de tu conexión a internet)\niptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE" },
+    { "tipo": "titulo", "valor": "Guardar y restaurar reglas" },
+    { "tipo": "comando", "valor": "# Guardar reglas (Debian/Ubuntu)\napt install iptables-persistent\nnetfilter-persistent save\n\n# Guardar reglas (CentOS/RHEL)\nservice iptables save\n\n# Guardar en un archivo manualmente\niptables-save > /etc/iptables/rules.v4\n\n# Restaurar desde archivo\niptables-restore < /etc/iptables/rules.v4" },
+    { "tipo": "titulo", "valor": "Ejemplo completo de script" },
+    { "tipo": "comando", "valor": "#!/bin/bash\n# Script básico de firewall\n\n# Limpiar reglas existentes\niptables -F\niptables -X\niptables -t nat -F\n\n# Políticas por defecto restrictivas\niptables -P INPUT DROP\niptables -P FORWARD DROP\niptables -P OUTPUT ACCEPT\n\n# Loopback\niptables -A INPUT -i lo -j ACCEPT\n\n# Conexiones establecidas\niptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT\n\n# SSH, HTTP, HTTPS\niptables -A INPUT -p tcp --dport 22 -s 10.0.0.0/8 -j ACCEPT\niptables -A INPUT -p tcp --dport 80 -j ACCEPT\niptables -A INPUT -p tcp --dport 443 -j ACCEPT\n\necho \"Firewall configurado\"" }
+  ]
+}

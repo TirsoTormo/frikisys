@@ -1,0 +1,23 @@
+{
+  "id": "hardening-servidor",
+  "titulo": "Hardening de Servidor Linux",
+  "categoria": "seguridad",
+  "descripcion": "Endurece tu servidor Linux paso a paso. sysctl, umask, actualizaciones automáticas, SELinux y más.",
+  "contenido": [
+    { "tipo": "titulo", "valor": "Primera hora tras instalar" },
+    { "tipo": "texto", "valor": "Inmediatamente después de instalar un servidor, hay una serie de pasos de hardening que debes aplicar antes de exponerlo a producción." },
+    { "tipo": "comando", "valor": "# 1. Actualizar todo\napt update && apt upgrade -y\n\n# 2. Instalar dependencias esenciales\napt install unattended-upgrades apt-listchanges fail2ban ufw\n\n# 3. Configurar actualizaciones automáticas\ndpkg-reconfigure unattended-upgrades" },
+    { "tipo": "titulo", "valor": "Configurar sysctl (parámetros de red)" },
+    { "tipo": "comando", "valor": "# /etc/sysctl.d/99-hardening.conf\n\n# Desactivar IP forwarding si no es necesario\nnet.ipv4.ip_forward = 0\nnet.ipv6.conf.all.forwarding = 0\n\n# Proteger contra IP spoofing\nnet.ipv4.conf.all.rp_filter = 1\nnet.ipv4.conf.default.rp_filter = 1\n\n# Desactivar ICMP redirect\nnet.ipv4.conf.all.accept_redirects = 0\nnet.ipv6.conf.all.accept_redirects = 0\n\n# Activar SYN cookies (contra SYN flood)\nnet.ipv4.tcp_syncookies = 1\n\n# Desactivar source packet routing\nnet.ipv4.conf.all.accept_source_route = 0\nnet.ipv6.conf.all.accept_source_route = 0\n\n# No responder a broadcasts de ICMP\nnet.ipv4.icmp_echo_ignore_broadcasts = 1\n\n# Ignorar ICMP redirects\nnet.ipv4.conf.all.send_redirects = 0\n\n# Aplicar cambios\nsysctl -p /etc/sysctl.d/99-hardening.conf" },
+    { "tipo": "titulo", "valor": "Configurar umask por defecto" },
+    { "tipo": "comando", "valor": "# /etc/profile (para todos los usuarios)\n# Añadir al final:\nif [ $UID -gt 199 ] && [ \"$(id -gn)\" = \"$(id -un)\" ]; then\n    umask 007  # Usuario normal: archivos privados\nelse\n    umask 027  # Root y system: permisos más restrictivos\nfi\n\n# /etc/login.defs también afecta el umask inicial\nUMASK 027" },
+    { "tipo": "titulo", "valor": "Firewall básico con UFW" },
+    { "tipo": "comando", "valor": "# Activar UFW\nufw enable\n\n# Política por defecto: denegar entrada, permitir salida\nufw default deny incoming\nufw default allow outgoing\n\n# Permitir SSH (puerto personalizado)\nufw allow 2222/tcp\n\n# Permitir HTTP y HTTPS\nufw allow 80/tcp\nufw allow 443/tcp\n\n# Ver estado\nufw status verbose\n\n# Permitir por rango de IPs (para acceso admin)\nufw allow from 192.168.1.0/24 to any port 2222" },
+    { "tipo": "titulo", "valor": "Desactivar servicios innecesarios" },
+    { "tipo": "comando", "valor": "# Ver servicios activos\nsystemctl list-units --type=service --state=running\n\n# Desactivar servicios innecesarios\nsystemctl stop avahi-daemon\nsystemctl stop cups\nsystemctl stop bluetooth\nsystemctl disable avahi-daemon\nsystemctl disable cups\nsystemctl disable bluetooth\n\n# Ver puertos escuchando\nss -tulpn | grep LISTEN" },
+    { "tipo": "titulo", "valor": "SELinux / AppArmor" },
+    { "tipo": "comando", "valor": "# Ver estado de SELinux (CentOS/RHEL)\nsestatus\n\n# En modo enforcing (activo)\nsetenforce 1\n\n# Configurar contextos de archivos\nsemanage fcontext -a -t httpd_sys_content_t \"/var/www/html(/.*)?\"\n\n# Ver estado de AppArmor (Debian/Ubuntu)\naa-status\n\n# Poner un perfil en modo enforce\naa-enforce /etc/apparmor.d/usr.sbin.mysqld" },
+    { "tipo": "titulo", "valor": "Restringir uso de sudo" },
+    { "tipo": "comando", "valor": "# Editar sudoers de forma segura\nvisudo\n\n# Permitir solo comandos específicos a un usuario\ndeploy ALL=(ALL) /usr/bin/systemctl restart nginx, /usr/bin/systemctl stop nginx, /bin/systemctl status nginx\n\n# Permitir sin contraseña solo para actualizaciones\ndeploy ALL=(ALL) NOPASSWD: /usr/bin/apt update, /usr/bin/apt upgrade" }
+  ]
+}
