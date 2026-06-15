@@ -110,8 +110,10 @@ function App() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    setActiveTag(null); // Clear tag filter when searching
     if (query) {
       setShowLanding(false); // Hide landing when searching
+      setCurrentView('home');
     }
   };
 

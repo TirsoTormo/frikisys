@@ -13,6 +13,13 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch, onLogoClick }) => {
     onSearch?.(searchQuery);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setSearchQuery('');
+      onSearch?.('');
+    }
+  };
+
   const handleLogoClick = () => {
     onLogoClick?.();
   };
@@ -53,6 +60,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch, onLogoClick }) => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Buscar artículos, comandos, configuraciones..."
               className="w-full h-10 px-4 pl-10 bg-base-bg border border-base-border rounded-pixel font-mono text-sm text-text-primary placeholder-text-muted focus:border-accent focus:outline-none transition-colors"
             />
