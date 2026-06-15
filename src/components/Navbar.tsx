@@ -80,17 +80,23 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch, onLogoClick }) => {
         </form>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-4">
-          <button className="hidden md:flex items-center gap-2 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-base-hover rounded transition-colors">
+        <div className="flex items-center gap-3">
+          {/* Contribuir button */}
+          <a
+            href="https://github.com/TirsoTormo/frikisys/blob/main/CONTRIBUTING.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-2 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-base-hover rounded transition-colors border border-base-border"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="square" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
             </svg>
-            <span className="font-mono text-sm">Nuevo</span>
-          </button>
+            <span className="font-mono text-sm">Contribuir</span>
+          </a>
           
           {/* GitHub link */}
           <a
-            href="https://github.com"
+            href="https://github.com/TirsoTormo/frikisys"
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 text-text-secondary hover:text-text-primary hover:bg-base-hover rounded transition-colors"

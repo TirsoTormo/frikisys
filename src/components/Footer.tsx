@@ -18,8 +18,7 @@ const Footer: React.FC<FooterProps> = ({ version = '0.1.0', onLinkClick, onShowA
     ],
     comunidad: [
       { label: 'GitHub', href: 'https://github.com/TirsoTormo/frikisys', icon: '💻', external: true },
-      { label: 'Discord', href: '#', icon: '💬' },
-      { label: 'Contribuir', href: 'https://github.com/TirsoTormo/frikisys/blob/main/README.md#contribuir', icon: '🤝', external: true },
+      { label: 'Contribuir', href: 'https://github.com/TirsoTormo/frikisys/blob/main/CONTRIBUTING.md', icon: '🤝', external: true },
     ],
     legal: [
       { label: 'Licencia MIT', href: '#', icon: '📜' },

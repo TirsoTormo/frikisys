@@ -475,6 +475,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.`}
                 return (
                   <ArticleViewer
                     title={content.article.titulo}
+                    articleId={content.article.id}
                     category={categoryDisplayNames[content.article.categoria] || content.article.categoria}
                     content={content.markdown}
                     codeBlocks={content.codeBlocks}

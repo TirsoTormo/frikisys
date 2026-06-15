@@ -94,6 +94,7 @@ const parseMarkdown = (md: string): string => {
 
 export interface ArticleViewerProps {
   title: string;
+  articleId?: string;
   category: string;
   content: string;
   codeBlocks?: CodeBlock[];
@@ -107,6 +108,7 @@ export interface ArticleViewerProps {
 
 const ArticleViewer: React.FC<ArticleViewerProps> = ({
   title,
+  articleId,
   category,
   content,
   codeBlocks = [],
@@ -118,6 +120,27 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({
   onTagClick,
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const getCategoryFolder = (id: string): string => {
+    const linux = ['intro-linux','comandos-basicos','gestion-usuarios','permisos','systemd','redes','disco-almacenamiento','procesos','scripts-bash','ssh','troubleshooting-cpu','troubleshooting-disk','troubleshooting-memory','troubleshooting-network','troubleshooting-ssh'];
+    if (linux.includes(id)) return 'linux';
+    const virt = ['intro-virtualizacion','docker','lxc','kvm','vmware','redes-virtuales','almacenamiento-virtual'];
+    if (virt.includes(id)) return 'virtualizacion';
+    const redes = ['tcp-ip-fundamentos','firewall-iptables','dns-bind','vpn-wireguard','monitoring-red'];
+    if (redes.includes(id)) return 'redes';
+    const seg = ['ssh-hardening','fail2ban','ssl-letsencrypt','audit-linux','hardening-servidor'];
+    if (seg.includes(id)) return 'seguridad';
+    const db = ['postgresql-intro','mysql-mariadb','redis-cache','mongodb','backup-db'];
+    if (db.includes(id)) return 'bases-de-datos';
+    const cloud = ['docker-intro','kubernetes-intro','terraform-intro','ci-cd','aws-ec2-s3'];
+    if (cloud.includes(id)) return 'cloud';
+    return 'linux';
+  };
+
+  // Construct GitHub edit URL
+  const githubEditUrl = articleId
+    ? `https://github.com/TirsoTormo/frikisys/edit/main/src/content/${getCategoryFolder(articleId)}/${articleId}.json`
+    : null;
 
   // Simple markdown to HTML conversion
   useEffect(() => {
@@ -271,7 +294,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({
 
       {/* Article footer */}
       <footer className="pt-6 border-t border-base-border">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <button className="flex items-center gap-2 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-base-hover rounded transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,19 +311,20 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-text-muted">¿Útil?</span>
-            <button className="p-1.5 text-text-secondary hover:text-accent hover:bg-base-hover rounded transition-colors">
+          {/* Edit on GitHub */}
+          {githubEditUrl && (
+            <a
+              href={githubEditUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-base-hover rounded transition-colors border border-base-border"
+            >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="square" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                <path strokeLinecap="square" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-            </button>
-            <button className="p-1.5 text-text-secondary hover:text-accent hover:bg-base-hover rounded transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="square" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
-              </svg>
-            </button>
-          </div>
+              <span className="font-mono text-sm">Editar en GitHub</span>
+            </a>
+          )}
         </div>
       </footer>
     </article>
