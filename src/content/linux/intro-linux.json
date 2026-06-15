@@ -3,6 +3,7 @@
   "titulo": "Introducción a Linux para SysAdmins",
   "categoria": "linux",
   "descripcion": "Fundamentos de Linux que todo Administrador de Sistemas necesita conocer",
+  "destacado": true,
   "contenido": [
     {
       "tipo": "texto",

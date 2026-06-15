@@ -3,6 +3,7 @@
   "titulo": "Docker: Contenedores para Desarrolladores",
   "categoria": "virtualizacion",
   "descripcion": "Fundamentos de Docker: imágenes, contenedores, volúmenes y docker-compose",
+  "destacado": true,
   "contenido": [
     {
       "tipo": "texto",

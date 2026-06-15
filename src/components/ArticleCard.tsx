@@ -9,6 +9,7 @@ export interface Article {
   date?: string;
   readTime?: string;
   contentText?: string; // Full text content for search
+  destacado?: boolean;
 }
 
 export interface ArticleCardProps {

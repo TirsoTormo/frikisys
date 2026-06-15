@@ -3,6 +3,7 @@
   "titulo": "Hardening SSH - Seguridad Avanzada",
   "categoria": "seguridad",
   "descripcion": "Endurece tu servidor SSH. Autenticación por claves, fail2ban, puertos personalizados y mejores prácticas.",
+  "destacado": true,
   "contenido": [
     { "tipo": "titulo", "valor": "Autenticación por claves SSH" },
     { "tipo": "texto", "valor": "La autenticación por contraseña es vulnerable a ataques de fuerza bruta. Las claves SSH usan criptografía asimétrica (RSA 4096 o Ed25519) y son prácticamente imposibles de crackear." },

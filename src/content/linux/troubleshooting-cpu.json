@@ -3,6 +3,7 @@
   "titulo": "CPU al 100%: Guía completa de diagnóstico",
   "categoria": "linux",
   "descripcion": "Aprende a identificar qué proceso consume todo el CPU y cómo resolverlo paso a paso.",
+  "destacado": true,
   "contenido": [
     {"tipo": "texto", "valor": "Cuando el CPU de tu servidor Linux llega al 100%, las consecuencias son inmediatas: el sistema se vuelve lentísimo, los servicios responden con timeout, y si no actúas rápido, puedes perder acceso al servidor. Esta guía te da el playbook exacto para identificar al culpable y resolverlo en minutos, no en horas."},
     {"tipo": "titulo", "valor": "1. Diagnóstico Rápido (30 segundos)"},

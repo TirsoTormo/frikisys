@@ -64,8 +64,8 @@ function App() {
     }
   };
 
-  // Get featured articles (top 3)
-  const featuredArticles = allArticleCards.slice(0, 3);
+  // Get featured articles (marked as destacado in JSON)
+  const featuredArticles = allArticleCards.filter(a => a.destacado).slice(0, 6);
 
   // Get articles based on category or search
   const getDisplayedArticles = (): Article[] => {

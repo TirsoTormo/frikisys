@@ -3,6 +3,7 @@
   "titulo": "Kubernetes - Orquestación de Contenedores",
   "categoria": "Cloud",
   "descripcion": "Introducción a Kubernetes. Pods, Deployments, Services y cómo desplegar aplicaciones escalables.",
+  "destacado": true,
   "contenido": [
     { "tipo": "titulo", "valor": "Qué es Kubernetes" },
     { "tipo": "texto", "valor": "Kubernetes (K8s) orquesta contenedores en producción: automáticamente despliega, escala y equilibra carga entre nodos. Si un contenedor falla, Kubernetes lo reinicia. Si un nodo falla, redistribuye los pods." },

@@ -66,6 +66,7 @@ export interface ArticleContent {
   titulo: string;
   categoria: string;
   descripcion: string;
+  destacado?: boolean;
   contenido: ContentBlock[];
 }
 
@@ -107,6 +108,7 @@ const mapJsonToArticle = (json: ArticleContent): Article => {
     date: undefined,
     readTime: `${readTime} min`,
     contentText,
+    destacado: json.destacado || false,
   };
 };
 

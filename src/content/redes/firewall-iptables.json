@@ -3,6 +3,7 @@
   "titulo": "Firewall con iptables - Guía Práctica",
   "categoria": "redes",
   "descripcion": "Configura firewalls con iptables en Linux. Aprende cadenas, reglas, NAT y cómo proteger tu servidor.",
+  "destacado": true,
   "contenido": [
     { "tipo": "titulo", "valor": "Conceptos básicos de iptables" },
     { "tipo": "texto", "valor": "iptables es el firewall de Linux. Trabaja con tablas (filter, nat, mangle), cadenas (INPUT, OUTPUT, FORWARD) y reglas. Cada paquete que atraviesa el sistema se evalúa contra las reglas en orden." },

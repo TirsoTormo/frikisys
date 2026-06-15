@@ -220,8 +220,7 @@ const Landing: React.FC<LandingProps> = ({ onNavigateToSection, onArticleClick, 
         </p>
         
         <p className="font-mono text-sm text-text-muted max-w-xl mx-auto mb-8">
-          Documentación práctica, comandos esenciales y guías de troubleshooting 
-          para profesionales de infraestructura Linux y virtualización.
+          Comandos que funcionan. Guías que ahorran horas. Troubleshooting real.
         </p>
 
         {/* Terminal Preview */}
