@@ -12,6 +12,7 @@ import {
   getTagsForArticle,
   ArticleContent 
 } from './utils/contentLoader';
+import { usePopularArticles } from './hooks/usePopularArticles';
 
 type View = 'home' | 'article' | 'legal' | 'tag';
 type LegalPage = 'licencia' | 'privacidad' | 'terminos' | null;
@@ -37,6 +38,18 @@ function App() {
   const [showLanding, setShowLanding] = useState(true); // Track if landing is shown
   const [activeTag, setActiveTag] = useState<string | null>(null); // Track active tag filter
   const mainContentRef = useRef<HTMLDivElement>(null);
+  
+  // Track popular articles
+  const { views, trackView } = usePopularArticles();
+  
+  // Get popular articles (top 12 by views)
+  const popularArticles = allArticleCards
+    .map(article => ({
+      ...article,
+      views: views[article.id] || 0
+    }))
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 12);
 
   // Scroll to top when view changes
   useEffect(() => {
@@ -91,6 +104,7 @@ function App() {
   };
 
   const handleArticleClick = (articleId: string) => {
+    trackView(articleId);
     setSelectedArticleId(articleId);
     setCurrentView('article');
   };
@@ -326,6 +340,7 @@ function App() {
                 onNavigateToSection={handleNavigateToSection}
                 onArticleClick={handleLandingArticleClick}
                 featuredArticles={featuredArticles}
+                popularArticles={popularArticles}
               />
             ) : (
               <ArticleGrid

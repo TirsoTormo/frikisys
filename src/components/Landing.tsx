@@ -5,6 +5,7 @@ export interface LandingProps {
   onNavigateToSection: (category: string) => void;
   onArticleClick: (articleId: string) => void;
   featuredArticles: Article[];
+  popularArticles: (Article & { views: number })[];
 }
 
 // Animated counter hook
@@ -173,7 +174,7 @@ const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description:
   </div>
 );
 
-const Landing: React.FC<LandingProps> = ({ onNavigateToSection, onArticleClick, featuredArticles }) => {
+const Landing: React.FC<LandingProps> = ({ onNavigateToSection, onArticleClick, featuredArticles, popularArticles }) => {
   const [heroVisible, setHeroVisible] = useState(false);
 
   useEffect(() => {
@@ -342,6 +343,50 @@ const Landing: React.FC<LandingProps> = ({ onNavigateToSection, onArticleClick, 
           </div>
         </section>
       )}
+
+      {/* Popular Articles */}
+      <section className="mb-16">
+        <div className="pixel-separator mb-6">
+          <h2 className="font-mono text-xl font-bold text-text-primary px-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-accent" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Más visitados
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {popularArticles.map((article, index) => (
+            <div
+              key={article.id}
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${index * 50}ms` }}
+              onClick={() => onArticleClick(article.id)}
+            >
+              <div className="bg-base-card border border-base-border rounded-pixel p-4 hover:border-accent transition-colors cursor-pointer h-full">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-accent/10 border border-accent/30 rounded flex items-center justify-center">
+                    <span className="font-mono text-sm font-bold text-accent">{index + 1}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-mono text-sm font-semibold text-text-primary mb-1 line-clamp-1">
+                      {article.title}
+                    </h3>
+                    <p className="font-mono text-xs text-text-muted line-clamp-2 mb-2">
+                      {article.description}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-accent">{article.views} visitas</span>
+                      <span className="text-text-muted">•</span>
+                      <span className="font-mono text-xs text-text-muted">{article.category}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* CTA Final */}
       <section className="text-center py-8 px-4 bg-base-card border border-base-border rounded-pixel">
