@@ -11,8 +11,7 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://frikisys.vercel.app/" />
     
-    <!-- Google Search Console Verification - REEMPLAZA ESTE VALOR CON TU CÓDIGO DE VERIFICACIÓN -->
-    <meta name="google-site-verification" content="TU_CODIGO_GSC_AQUI" />
+    %REACT_APP_GSC_VERIFICATION%
     
     <!-- Open Graph -->
     <meta property="og:title" content="Frikisys - Wiki SysAdmin en Español" />
@@ -34,14 +33,7 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>Frikisys - Wiki SysAdmin & SysOps en Español</title>
     
-    <!-- Google Analytics 4 - REEMPLAZA G-XXXXXXXXXX CON TU ID DE MEDICIÓN -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
-    </script>
+    %REACT_APP_GA4_ID%
   </head>
   <body>
     <noscript>Activa JavaScript para usar Frikisys.</noscript>
