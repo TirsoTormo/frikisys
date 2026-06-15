@@ -63,7 +63,7 @@
       "descripcion": "Diagnosticar problemas de red"
     },
     {
-      "tipo": "info",
+      "tipo": "texto",
       "valor": "Bridge = VMs en la misma red que el host. NAT = VMs detrás del host. VLAN = aislamiento sin overhead de virtualización."
     }
   ]

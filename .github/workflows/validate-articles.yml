@@ -1,0 +1,32 @@
+name: Validar artículos JSON
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/content/**/*.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/content/**/*.json'
+
+jobs:
+  validate-json:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Validar JSON de artículos
+        run: node scripts/validate-articles.js
+
+      - name: Build de producción
+        run: npm run build

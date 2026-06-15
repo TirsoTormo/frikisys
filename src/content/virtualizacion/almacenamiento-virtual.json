@@ -72,7 +72,7 @@
       "descripcion": "Compresión y cifrado de datos"
     },
     {
-      "tipo": "info",
+      "tipo": "texto",
       "valor": "Usa qcow2 + thin provisioning para desarrollo. Para producción crítica usa thick + RAID. Los snapshots son esenciales antes de actualizaciones."
     }
   ]

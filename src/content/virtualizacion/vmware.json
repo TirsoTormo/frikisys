@@ -63,7 +63,7 @@
       "descripcion": "Gestionar almacenamiento"
     },
     {
-      "tipo": "info",
+      "tipo": "texto",
       "valor": "VMware Workstation es para desarrollo local. ESXi requiere licencia para producción (hay versión gratuita limitada). vCenter permite gestionar múltiples hosts."
     }
   ]

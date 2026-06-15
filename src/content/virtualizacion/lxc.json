@@ -63,7 +63,7 @@
       "descripcion": "Snapshots y clones"
     },
     {
-      "tipo": "info",
+      "tipo": "texto",
       "valor": "LXC es más bajo nivel que Docker. LXD proporciona una API REST y herramientas más modernas. Para microservicios usa Docker, para VMs ligeras usa LXC/LXD."
     }
   ]
