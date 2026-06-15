@@ -54,207 +54,316 @@ const useAnimatedCounter = (end: number, duration: number = 2000, startOnMount: 
   return { count, ref };
 };
 
-// Stat item component
-const StatItem: React.FC<{ value: number; label: string; suffix?: string }> = ({ value, label, suffix = '' }) => {
-  const { count, ref } = useAnimatedCounter(value, 1500);
+// Categories data
+const categories = [
+  { id: 'linux', name: 'Linux', icon: 'tux', color: '#FCC624', description: 'Comandos, permisos, procesos y troubleshooting' },
+  { id: 'virtualizacion', name: 'Virtualización', icon: 'server', color: '#2684FF', description: 'Docker, KVM, LXC, VMware y más' },
+  { id: 'redes', name: 'Redes', icon: 'network', color: '#00E676', description: 'DNS, firewall, VPN y tcpdump' },
+  { id: 'seguridad', name: 'Seguridad', icon: 'shield', color: '#FF5722', description: 'Hardening, fail2ban y auditoría' },
+  { id: 'bases-de-datos', name: 'Bases de Datos', icon: 'database', color: '#9C27B0', description: 'PostgreSQL, MySQL, MongoDB y Redis' },
+  { id: 'cloud', name: 'Cloud', icon: 'cloud', color: '#00BCD4', description: 'AWS, Kubernetes, Terraform y CI/CD' },
+];
+
+// Category icons as SVG components
+const CategoryIcon: React.FC<{ icon: string; color: string }> = ({ icon, color }) => {
+  const icons: Record<string, React.ReactNode> = {
+    tux: (
+      <svg viewBox="0 0 24 24" fill={color} className="w-8 h-8">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+      </svg>
+    ),
+    server: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" className="w-8 h-8">
+        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+        <line x1="6" y1="6" x2="6.01" y2="6"/>
+        <line x1="6" y1="18" x2="6.01" y2="18"/>
+      </svg>
+    ),
+    network: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" className="w-8 h-8">
+        <circle cx="12" cy="5" r="3"/>
+        <circle cx="5" cy="19" r="3"/>
+        <circle cx="19" cy="19" r="3"/>
+        <line x1="12" y1="8" x2="5" y2="16"/>
+        <line x1="12" y1="8" x2="19" y2="16"/>
+      </svg>
+    ),
+    shield: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" className="w-8 h-8">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+    ),
+    database: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" className="w-8 h-8">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+      </svg>
+    ),
+    cloud: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" className="w-8 h-8">
+        <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>
+      </svg>
+    ),
+  };
+  
+  return <>{icons[icon]}</>;
+};
+
+// Terminal preview component
+const TerminalPreview: React.FC = () => {
+  const [activeLine, setActiveLine] = useState(0);
+  
+  const lines = [
+    { cmd: '$', text: 'cat /etc/os-release', delay: 0 },
+    { cmd: '', text: 'NAME="Ubuntu"', delay: 300 },
+    { cmd: '', text: 'VERSION="22.04.3 LTS (Jammy Jellyfish)"', delay: 400 },
+    { cmd: '', text: 'ID=ubuntu', delay: 500 },
+    { cmd: '$', text: 'docker ps', delay: 800 },
+    { cmd: '', text: 'CONTAINER ID   IMAGE      STATUS', delay: 1100 },
+    { cmd: '', text: 'a1b2c3d4e5f6   nginx      Up 2 hours', delay: 1200 },
+    { cmd: '$', text: 'htop', delay: 1600 },
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveLine(prev => prev < lines.length - 1 ? prev + 1 : prev);
+    }, 300);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <div ref={ref} className="flex flex-col items-center p-4">
-      <div className="flex items-baseline gap-1">
-        <span className="font-mono text-4xl md:text-5xl font-bold text-text-primary tabular-nums">
-          {count}
-        </span>
-        <span className="font-mono text-xl text-accent">{suffix}</span>
+    <div className="bg-[#0d1117] rounded-lg border border-[#30363d] overflow-hidden shadow-2xl">
+      {/* Terminal header */}
+      <div className="flex items-center gap-2 px-4 py-3 bg-[#161b22] border-b border-[#30363d]">
+        <div className="w-3 h-3 rounded-full bg-[#ff5f56]"/>
+        <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"/>
+        <div className="w-3 h-3 rounded-full bg-[#27c93f]"/>
+        <span className="ml-4 font-mono text-xs text-[#8b949e]">frikisys ~ bash</span>
       </div>
-      <span className="font-mono text-sm text-text-muted mt-1">{label}</span>
-      {/* Bouncing pixel decoration */}
-      <div className="flex gap-1 mt-2">
-        <div className="w-1.5 h-1.5 bg-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-        <div className="w-1.5 h-1.5 bg-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-        <div className="w-1.5 h-1.5 bg-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+      
+      {/* Terminal content */}
+      <div className="p-4 font-mono text-sm space-y-1">
+        {lines.slice(0, activeLine + 1).map((line, i) => (
+          <div key={i} className="flex items-start gap-2">
+            {line.cmd && <span className="text-accent">{line.cmd}</span>}
+            <span className={line.cmd ? 'text-[#e6edf3]' : 'text-[#8b949e]'}>
+              {line.text}
+            </span>
+          </div>
+        ))}
+        {activeLine < lines.length - 1 && (
+          <div className="inline-block w-2 h-4 bg-accent animate-pulse ml-2"/>
+        )}
       </div>
     </div>
   );
 };
 
+// Feature card component
+const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
+  <div className="p-4 bg-base-card border border-base-border rounded-pixel hover:border-accent transition-colors group cursor-pointer">
+    <div className="mb-3 text-accent group-hover:scale-110 transition-transform">
+      {icon}
+    </div>
+    <h3 className="font-mono text-sm font-semibold text-text-primary mb-1">{title}</h3>
+    <p className="font-mono text-xs text-text-muted">{description}</p>
+  </div>
+);
+
 const Landing: React.FC<LandingProps> = ({ onNavigateToSection, onArticleClick, featuredArticles }) => {
   const [heroVisible, setHeroVisible] = useState(false);
 
   useEffect(() => {
-    // Trigger fade-in animation on mount
     const timer = setTimeout(() => setHeroVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleCTAClick = (category: string) => {
-    onNavigateToSection(category);
-  };
+  const features = [
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>,
+      title: 'Comandos verificados',
+      description: 'Cada comando está probado en entornos reales'
+    },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+      title: 'Actualizado',
+      description: 'Contenido mantenido por la comunidad'
+    },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>,
+      title: '100% Español',
+      description: 'Documentación en tu idioma'
+    },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>,
+      title: 'Código abierto',
+      description: 'Edita y contribuye en GitHub'
+    },
+  ];
 
   return (
     <div className="min-h-full py-8 px-4">
       {/* Hero Section */}
-      <section 
-        className={`text-center mb-16 transition-all duration-1000 ${
-          heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}
-      >
-        {/* Logo/Title with pixel decoration */}
-        <div className="relative inline-block mb-6">
-          {/* Pixel corners */}
-          <div className="absolute -top-2 -left-2 w-3 h-3 bg-pixel-dark" />
-          <div className="absolute -top-2 -right-2 w-3 h-3 bg-pixel-dark" />
-          <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-pixel-dark" />
-          <div className="absolute -bottom-2 -right-2 w-3 h-3 bg-pixel-dark" />
-          
-          <h1 className="font-mono text-5xl md:text-6xl font-bold text-text-primary relative">
-            <span className="relative z-10">Frikisys</span>
-            {/* Glitch effect on hover */}
-            <span className="absolute inset-0 text-accent opacity-0 hover:opacity-70 transition-opacity blur-sm">
-              Frikisys
-            </span>
-          </h1>
-        </div>
-
-        {/* Subtitle */}
-        <h2 className="font-mono text-xl md:text-2xl text-accent mb-4">
-          La wiki que los SysAdmins merecemos
-        </h2>
-
-        {/* Description */}
-        <p className="font-mono text-sm md:text-base text-text-secondary max-w-2xl mx-auto mb-8 leading-relaxed">
+      <section className={`text-center mb-16 transition-all duration-1000 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        {/* Title */}
+        <h1 className="font-mono text-4xl md:text-6xl font-bold text-text-primary mb-4">
+          <span className="bg-gradient-to-r from-accent to-[#00E5FF] bg-clip-text text-transparent">
+            Frikisys
+          </span>
+        </h1>
+        
+        <p className="font-mono text-lg md:text-xl text-text-secondary mb-2">
+          Wiki de SysAdmin & SysOps en español
+        </p>
+        
+        <p className="font-mono text-sm text-text-muted max-w-xl mx-auto mb-8">
           Documentación práctica, comandos esenciales y guías de troubleshooting 
           para profesionales de infraestructura Linux y virtualización.
         </p>
 
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={() => handleCTAClick('linux')}
-            className="group px-8 py-4 bg-accent hover:bg-accent-hover text-base-bg font-mono text-sm font-semibold rounded-pixel transition-all hover:shadow-pixel-md relative overflow-hidden"
-          >
-            {/* Pixel decoration */}
-            <div className="absolute top-0 left-0 w-2 h-2 bg-pixel-light" />
-            <div className="absolute bottom-0 right-0 w-2 h-2 bg-pixel-light" />
-            
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="square" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-              Explorar Linux
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleCTAClick('virtualizacion')}
-            className="group px-8 py-4 bg-base-card border-2 border-accent hover:border-accent-hover text-text-primary font-mono text-sm font-semibold rounded-pixel transition-all hover:shadow-pixel-md relative overflow-hidden"
-          >
-            {/* Pixel decoration */}
-            <div className="absolute top-0 left-0 w-2 h-2 bg-accent" />
-            <div className="absolute bottom-0 right-0 w-2 h-2 bg-accent" />
-            
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="square" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-              </svg>
-              Explorar Virtualización
-            </span>
-          </button>
+        {/* Terminal Preview */}
+        <div className="max-w-2xl mx-auto mb-10">
+          <TerminalPreview />
         </div>
 
-        {/* Decorative pixel grid */}
-        <div className="mt-12 opacity-20">
-          <div 
-            className="h-px w-full max-w-md mx-auto"
-            style={{
-              background: 'repeating-linear-gradient(90deg, var(--accent) 0px, var(--accent) 4px, transparent 4px, transparent 8px)'
-            }}
-          />
+        {/* CTA */}
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => onNavigateToSection('linux')}
+            className="px-6 py-3 bg-accent hover:bg-accent-hover text-base-bg font-mono text-sm font-semibold rounded-pixel transition-all hover:shadow-pixel-md cursor-pointer"
+          >
+            Empezar a explorar
+          </button>
+          <a
+            href="https://github.com/TirsoTormo/frikisys"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-base-card border border-accent text-text-primary font-mono text-sm font-semibold rounded-pixel transition-all hover:border-accent-hover hover:shadow-pixel-md cursor-pointer"
+          >
+            Ver en GitHub
+          </a>
         </div>
       </section>
 
-      {/* Statistics Section */}
+      {/* Stats Section */}
       <section className="mb-16">
-        <div className="bg-base-card border border-base-border rounded-pixel p-8 shadow-pixel-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <StatItem value={42} label="artículos" />
-            <StatItem value={6} label="categorías" />
-            <StatItem value={100} label="% español" suffix="%" />
+        <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+          <div className="text-center p-4 bg-base-card border border-base-border rounded-pixel">
+            <div className="font-mono text-3xl md:text-4xl font-bold text-accent">42</div>
+            <div className="font-mono text-xs text-text-muted mt-1">artículos</div>
+          </div>
+          <div className="text-center p-4 bg-base-card border border-base-border rounded-pixel">
+            <div className="font-mono text-3xl md:text-4xl font-bold text-accent">6</div>
+            <div className="font-mono text-xs text-text-muted mt-1">categorías</div>
+          </div>
+          <div className="text-center p-4 bg-base-card border border-base-border rounded-pixel">
+            <div className="font-mono text-3xl md:text-4xl font-bold text-accent">100%</div>
+            <div className="font-mono text-xs text-text-muted mt-1">español</div>
           </div>
         </div>
       </section>
 
-      {/* Featured Articles Section */}
+      {/* Categories Grid */}
       <section className="mb-16">
-        <div className="pixel-separator mb-8">
-          <h2 className="font-mono text-2xl font-bold text-text-primary px-4">
-            Artículos destacados
+        <div className="pixel-separator mb-6">
+          <h2 className="font-mono text-xl font-bold text-text-primary px-4">
+            Explorar por categoría
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredArticles.map((article, index) => (
-            <div
-              key={article.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${index * 100}ms` }}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => onNavigateToSection(cat.id)}
+              className="group p-5 bg-base-card border border-base-border rounded-pixel hover:border-[var(--accent)] transition-all text-left cursor-pointer"
+              style={{ '--accent': cat.color } as React.CSSProperties}
             >
-              <ArticleCard 
-                article={article} 
-                onClick={onArticleClick}
-              />
-            </div>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <CategoryIcon icon={cat.icon} color={cat.color} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-mono text-sm font-semibold text-text-primary group-hover:text-accent transition-colors mb-1">
+                    {cat.name}
+                  </h3>
+                  <p className="font-mono text-xs text-text-muted leading-relaxed">
+                    {cat.description}
+                  </p>
+                </div>
+                <svg className="w-4 h-4 text-text-muted group-hover:text-accent group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="square" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </button>
           ))}
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-base-border pt-8 mt-16">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-text-muted">Frikisys</span>
-            <span className="font-mono text-xs text-text-muted">v0.1.0</span>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <a
-              href="https://github.com/TirsoTormo/frikisys"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 font-mono text-sm text-text-secondary hover:text-text-primary transition-colors group"
-            >
-              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
-                <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
-              </svg>
-              GitHub
-            </a>
-
-            <a
-              href="https://github.com/TirsoTormo/frikisys/blob/main/CONTRIBUTING.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono text-sm text-text-secondary hover:text-text-primary transition-colors"
-            >
-              Contribuir
-            </a>
-
-            <a
-              href="/legal/licencia"
-              className="font-mono text-sm text-text-secondary hover:text-text-primary transition-colors"
-            >
-              Licencia MIT
-            </a>
-          </div>
+      {/* Features Grid */}
+      <section className="mb-16">
+        <div className="pixel-separator mb-6">
+          <h2 className="font-mono text-xl font-bold text-text-primary px-4">
+            Por qué Frikisys
+          </h2>
         </div>
 
-        {/* Pixel decoration */}
-        <div className="flex justify-center gap-1 mt-6 opacity-30">
-          <div className="w-2 h-2 bg-accent" />
-          <div className="w-2 h-2 bg-accent" />
-          <div className="w-2 h-2 bg-accent" />
-          <div className="w-2 h-2 bg-accent" />
-          <div className="w-2 h-2 bg-accent" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {features.map((feature, i) => (
+            <FeatureCard key={i} {...feature} />
+          ))}
         </div>
-      </footer>
+      </section>
+
+      {/* Featured Articles */}
+      {featuredArticles.length > 0 && (
+        <section className="mb-16">
+          <div className="pixel-separator mb-6">
+            <h2 className="font-mono text-xl font-bold text-text-primary px-4">
+              Artículos destacados
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredArticles.map((article, index) => (
+              <div
+                key={article.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <ArticleCard 
+                  article={article} 
+                  onClick={onArticleClick}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* CTA Final */}
+      <section className="text-center py-8 px-4 bg-base-card border border-base-border rounded-pixel">
+        <h2 className="font-mono text-lg font-semibold text-text-primary mb-2">
+          ¿Falta algo?
+        </h2>
+        <p className="font-mono text-sm text-text-muted mb-4">
+          Ayúdanos a hacer Frikisys mejor. Abre un issue o envía un PR.
+        </p>
+        <a
+          href="https://github.com/TirsoTormo/frikisys/blob/main/CONTRIBUTING.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-base-bg font-mono text-sm font-semibold rounded-pixel transition-all cursor-pointer"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="square" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          Contribuir en GitHub
+        </a>
+      </section>
 
       {/* CSS for fade-in-up animation */}
       <style>{`
